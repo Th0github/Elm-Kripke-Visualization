@@ -4370,12 +4370,6 @@ function _Browser_load(url)
 		}
 	}));
 }
-var $author$project$Main$LinkClicked = function (a) {
-	return {$: 'LinkClicked', a: a};
-};
-var $author$project$Main$UrlChanged = function (a) {
-	return {$: 'UrlChanged', a: a};
-};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5165,24 +5159,56 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$Main$Model = F2(
-	function (key, url) {
-		return {key: key, url: url};
-	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$KripkeModel = {$: 'KripkeModel'};
+var $author$project$Main$ReadMe = {$: 'ReadMe'};
+var $author$project$Main$parseUrl = function (url) {
+	var _v0 = url.fragment;
+	_v0$2:
+	while (true) {
+		if (_v0.$ === 'Just') {
+			switch (_v0.a) {
+				case 'kripkemodel':
+					return $author$project$Main$KripkeModel;
+				case 'readme':
+					return $author$project$Main$ReadMe;
+				default:
+					break _v0$2;
+			}
+		} else {
+			break _v0$2;
+		}
+	}
+	return $author$project$Main$KripkeModel;
+};
 var $author$project$Main$init = F3(
-	function (flags, url, key) {
+	function (_v0, url, key) {
 		return _Utils_Tuple2(
-			A2($author$project$Main$Model, key, url),
+			{
+				key: key,
+				page: $author$project$Main$parseUrl(url)
+			},
 			$elm$core$Platform$Cmd$none);
 	});
+var $elm$core$Debug$todo = _Debug_todo;
+var $author$project$Main$onUrlChange = _Debug_todo(
+	'Main',
+	{
+		start: {line: 39, column: 15},
+		end: {line: 39, column: 19}
+	})('onUrlChange');
+var $author$project$Main$onUrlRequest = _Debug_todo(
+	'Main',
+	{
+		start: {line: 36, column: 16},
+		end: {line: 36, column: 20}
+	})('onUrlRequest');
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
@@ -5231,94 +5257,73 @@ var $elm$url$Url$toString = function (url) {
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'LinkClicked') {
-			var urlRequest = msg.a;
-			if (urlRequest.$ === 'Internal') {
-				var url = urlRequest.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$browser$Browser$Navigation$pushUrl,
-						model.key,
-						$elm$url$Url$toString(url)));
-			} else {
-				var href = urlRequest.a;
-				return _Utils_Tuple2(
-					model,
-					$elm$browser$Browser$Navigation$load(href));
-			}
+			var url = msg.a;
+			return _Utils_Tuple2(
+				model,
+				A2(
+					$elm$browser$Browser$Navigation$pushUrl,
+					model.key,
+					$elm$url$Url$toString(url)));
 		} else {
 			var url = msg.a;
 			return _Utils_Tuple2(
 				_Utils_update(
 					model,
-					{url: url}),
+					{
+						page: $author$project$Main$parseUrl(url)
+					}),
 				$elm$core$Platform$Cmd$none);
 		}
 	});
-var $elm$html$Html$b = _VirtualDom_node('b');
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$Main$nav = _Debug_todo(
+	'Main',
+	{
+		start: {line: 75, column: 7},
+		end: {line: 75, column: 11}
+	})('nav');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$href = function (url) {
+var $author$project$Main$viewKripkeModel = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			$elm$html$Html$text('This is the Kripke Model page.')
+		]));
+var $author$project$Main$viewReadMe = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			$elm$html$Html$text('This is the Read Me page.')
+		]));
+var $author$project$Main$viewPage = function (page) {
 	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var $elm$html$Html$li = _VirtualDom_node('li');
-var $author$project$Main$viewLink = function (path) {
-	return A2(
-		$elm$html$Html$li,
+		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				A2(
-				$elm$html$Html$a,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$href(path)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(path)
-					]))
+				$author$project$Main$nav,
+				function () {
+				if (page.$ === 'KripkeModel') {
+					return $author$project$Main$viewKripkeModel;
+				} else {
+					return $author$project$Main$viewReadMe;
+				}
+			}()
 			]));
 };
 var $author$project$Main$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				$elm$html$Html$text('The current URL is: '),
-				A2(
-				$elm$html$Html$b,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$elm$url$Url$toString(model.url))
-					])),
-				A2(
-				$elm$html$Html$ul,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$author$project$Main$viewLink('/blog'),
-						$author$project$Main$viewLink('/kripke')
-					]))
+				$author$project$Main$viewPage(model.page)
 			]),
-		title: 'URL Interceptor'
+		title: 'Navigation'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
-	{init: $author$project$Main$init, onUrlChange: $author$project$Main$UrlChanged, onUrlRequest: $author$project$Main$LinkClicked, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
+	{init: $author$project$Main$init, onUrlChange: $author$project$Main$onUrlChange, onUrlRequest: $author$project$Main$onUrlRequest, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
