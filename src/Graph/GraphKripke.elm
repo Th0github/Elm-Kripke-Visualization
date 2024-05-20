@@ -1,22 +1,22 @@
 module Graph.GraphKripke exposing (..)
 
 import Graph exposing (Graph)
-import Kripke.KripkeModel exposing (..)
+import Pages.KripkeModel exposing (..)
+import Debug exposing (todo)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 -- convert a Kripke model to a Graph
 kripkeToGraph : KripkeModel -> Graph World ()
-kripkeToGraph (KrM worlds _ relations) =    
-    List.foldl (\(from, to) g -> Graph.Edge from to () g)
-        (Graph.Node worlds)
-        relations
+kripkeToGraph =
+    todo "implement model to graph conversion"
 
 -- Generate GraphViz DOT format from a graph
-generateDot : Graph World () -> String
-generateDot graph =
-    let
-        config = undefined
-    in
-    toDot config
-        (\world -> String.fromInt world)
-        (\_ -> "")
-        graph
+generateDot : Graph a b -> String
+generateDot =
+    todo "Implement GraphViz DOT generation from a graph"
+
+-- Generate the SVG representation of a graph
+generateSVG : KripkeModel -> List (Svg msg)
+generateSVG model =
+    todo "Implement SVG generation"

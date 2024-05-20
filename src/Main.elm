@@ -1,23 +1,12 @@
 module Main exposing (..)
 
 import Html exposing (Html,text, div, pre)
-import Kripke.KripkeModel exposing (KripkeModel, valuationFunction)
+import Pages.KripkeModel exposing (KripkeModel)
 import Graph.GraphKripke exposing (kripkeToGraph, generateDot)
+import Html exposing (a)
+import Url.Parser exposing (oneOf)
+import Svg exposing (Svg)
 
-view : Html msg
-view = 
-    let
-        model = KrM [0,1,2] valuationFunction [(0,1),(1,2),(2,0)]
-        graph = kripkeToGraph model
-        dotOutput = generateDot graph
-    in
-    div [] [pre [] [text dotOutput]]
-    
-
-main =
-    Html.program
-        { init = ( (), Cmd.none )
-        , view = (\_ -> view)
-        , update = (\_ _ -> ( (), Cmd.none ))
-        , subscriptions = (\_ -> Sub.none)
-        }
+type Route
+    = Blog Int
+    | Kripke String
