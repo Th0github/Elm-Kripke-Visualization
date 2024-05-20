@@ -1,12 +1,14 @@
 module Main exposing (..)
 
-import Html exposing (Html,text, div, pre)
-import Pages.KripkeModel exposing (KripkeModel)
-import Graph.GraphKripke exposing (kripkeToGraph, generateDot)
-import Html exposing (a)
-import Url.Parser exposing (oneOf)
-import Svg exposing (Svg)
+import Browser
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
+import Url
+import Url.Parser as Parser
+import Browser.Navigation as Nav
+import Html.Lazy exposing (lazy)
+import Http exposing (..)
 
-type Route
-    = Blog Int
-    | Kripke String
