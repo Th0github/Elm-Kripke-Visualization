@@ -1,0 +1,44 @@
+/* Include Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+/* Global styles */
+body, input, button, div {
+  font-family: 'Roboto', sans-serif; /* Apply Roboto font throughout */
+}
+
+.container {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px; /* Adds spacing between sections */
+}
+
+.input {
+  display: block; /* Makes the input take its own line */
+  width: 100%; /* Utilizes full width of the container */
+  padding: 8px;
+  margin-right: 10px;
+  margin-bottom: 10px; /* Adds spacing below the input field */
+  border: 1px solid #ccc; /* Subtle border */
+  border-radius: 4px; /* Rounded corners */
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); /* Inner shadow for depth */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transitions for interactions */
+}
+
+.input:focus {
+  border-color: #4CAF50; /* Highlight color on focus */
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5); /* Glowing effect on focus */
+}
+
+.button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer; /* Changes cursor to pointer to indicate it's clickable */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+.button:hover {
+  background-color: #367c39; /* Darker shade on hover */
+}
