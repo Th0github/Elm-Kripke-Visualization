@@ -12,6 +12,11 @@ body, input, button, div {
   margin-bottom: 10px; /* Adds spacing between sections */
 }
 
+.container-flex {
+  display: flex;
+  flex-direction: row;
+}
+
 .input {
   display: block; /* Makes the input take its own line */
   width: 100%; /* Utilizes full width of the container */
@@ -41,4 +46,17 @@ body, input, button, div {
 
 .button:hover {
   background-color: #367c39; /* Darker shade on hover */
+}
+
+.left-column {
+  flex: 1;
+  padding: 20px;
+}
+
+.right-column {
+  flex: 1;
+  padding: 20px;
+  border-left: 1px solid #ccc;
+  height: 100vh;
+  overflow: auto;
 }
