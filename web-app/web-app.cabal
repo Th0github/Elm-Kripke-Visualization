@@ -39,6 +39,7 @@ library
       aeson
     , base >=4.7 && <5
     , scotty
+    , wai-cors
   default-language: Haskell2010
 
 executable web-app-exe
@@ -54,6 +55,7 @@ executable web-app-exe
       aeson
     , base >=4.7 && <5
     , scotty
+    , wai-cors
     , web-app
   default-language: Haskell2010
 
@@ -71,5 +73,6 @@ test-suite web-app-test
       aeson
     , base >=4.7 && <5
     , scotty
+    , wai-cors
     , web-app
   default-language: Haskell2010
