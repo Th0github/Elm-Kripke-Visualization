@@ -4,3 +4,5 @@ elm-stuff
 repl-temp-*
 
 .stack-work
+
+node_modules
