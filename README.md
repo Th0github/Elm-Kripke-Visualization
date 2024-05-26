@@ -1,31 +1,36 @@
-# Elm-Kripke-Visualization
+# Elm Kripke Visualization
 
-## Data model
+## How to run the application
 
-```json
-{
-    "worlds": [Integer],
-    "relations": [
-        {
-            "agentName": string,
-            "worldRelations": [[Integer]]
-        }
-    ],
-    "valuations": {
-        "world": Integer,
-        "propostions": [Integer]
-    }
-}
+### Elm
 
+First install the Elm compiler (see https://guide.elm-lang.org/install/)
+To compile the new version for Elm front-end:
+
+```bash
+elm make src/Main.elm --main.js
 ```
 
-# How to run the program
+With runnning
 
-## Elm
-The Elm application can be opened in browser by openning the `index.html`.
+```bash
+elm reactor
+```
 
-To compile the Elm application run `elm make src/Main.elm --output elm.js`.
+You can open the index.html and see the web page
 
-To compile the test, you will need elm-test and the test can be run with `npx elm-test`
+### Haskell
 
-## Haskell
+The Haskell back-end is called web-app
+
+After installing stack (see https://www.haskell.org/), you can build the application with
+
+```bash
+stack build
+```
+
+After that you run the application with
+
+```bash
+stack run web-app-exe
+```
