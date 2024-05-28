@@ -65,8 +65,4 @@ test-suite simpletests
     , report
     , scotty
     , wai-cors
-<<<<<<< HEAD
-    , web-app
-=======
->>>>>>> 57e019377ac0249c8d1427f52b29624489fbf65b
   default-language: Haskell2010
