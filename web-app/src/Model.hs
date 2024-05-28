@@ -27,20 +27,24 @@ data Model = Mo
   deriving (Eq, Ord, Show)
 
 instance FromJSON Model where
-  parseJSON (Object v) =
-    Mo
-      <$> v .: "worlds"
-      <*> (v .: "relations" >>= mapM parseRel)
-      <*> (v .: "valuations" >>= mapM parseVal)
+  parseJSON =
+    withObject
+      "Object"
+      ( \o ->
+          do
+            _worlds <- o .: "worlds"
+            _relations <- o .: "relations" >>= mapM parseRel
+            _valutations <- o .: "valuations" >>= mapM parseVal
+            return (Mo _worlds _relations _valutations)
+      )
     where
-      parseRel (agent, worlds') = (,) agent <$> parseJSON (Array worlds')
-      parseVal (world, props) = (,) world <$> parseJSON props
-  parseJSON _ = fail "Could not parse Model from JSON"
+      parseRel = withObject "Relations" (\o' -> (,) <$> (o' .: "agentName") <*> (o' .: "worldRelations"))
+      parseVal = withObject "Valuations" (\o' -> (,) <$> (o' .: "world") <*> (o' .: "propositions"))
 
 instance ToJSON Model where
   toJSON (Mo worlds' rel' val') =
     object
       [ "worlds" .= worlds',
-        "relations" .= map (\(a, ws) -> object ["agentName" .= a, "relations" .= ws]) rel',
+        "relations" .= map (\(a, ws) -> object ["agentName" .= a, "worldRelations" .= ws]) rel',
         "valuations" .= map (\(w, ps) -> object ["world" .= w, "propositions" .= ps]) val'
       ]
