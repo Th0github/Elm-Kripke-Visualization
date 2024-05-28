@@ -1,1 +1,13 @@
-cradle: { stack: {} }
+cradle:
+  stack:
+    - path: "./lib"
+      component: "web-app:lib"
+
+    - path: "./exec/Main.lhs"
+      component: "web-app:exe:myprogram"
+
+    - path: "./exec/Paths_web-app.hs"
+      component: "web-app:exe:myprogram"
+
+    - path: "./test"
+      component: "web-app:test:simpletests"
