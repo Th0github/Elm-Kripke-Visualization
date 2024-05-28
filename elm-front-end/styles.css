@@ -44,6 +44,16 @@ body, input, button, div {
   transition: background-color 0.3s; /* Smooth transition for background color */
 }
 
+.button-secondary {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer; /* Changes cursor to pointer to indicate it's clickable */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
 .button:hover {
   background-color: #367c39; /* Darker shade on hover */
 }

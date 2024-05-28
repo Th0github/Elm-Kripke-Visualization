@@ -5445,6 +5445,27 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
 var $author$project$Main$RecieveReadMe = function (a) {
 	return {$: 'RecieveReadMe', a: a};
 };
@@ -6371,66 +6392,6 @@ var $author$project$Main$postModel = function (model) {
 			url: 'http://127.0.0.1:3000/model'
 		});
 };
-var $author$project$Main$toJson = function (model) {
-	return A2(
-		$elm$json$Json$Encode$encode,
-		4,
-		$elm$json$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'worlds',
-					A2(
-						$elm$json$Json$Encode$list,
-						function (_v0) {
-							var w = _v0.a;
-							return $elm$json$Json$Encode$int(w);
-						},
-						model.worlds)),
-					_Utils_Tuple2(
-					'valuations',
-					A2(
-						$elm$json$Json$Encode$list,
-						function (_v1) {
-							var w = _v1.a;
-							var ps = _v1.b;
-							return $elm$json$Json$Encode$object(
-								_List_fromArray(
-									[
-										_Utils_Tuple2(
-										'world',
-										$elm$json$Json$Encode$int(w)),
-										_Utils_Tuple2(
-										'propositions',
-										A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
-									]));
-						},
-						model.worlds)),
-					_Utils_Tuple2(
-					'relations',
-					A2(
-						$elm$json$Json$Encode$list,
-						function (_v2) {
-							var a = _v2.a;
-							var rs = _v2.b;
-							return $elm$json$Json$Encode$object(
-								_List_fromArray(
-									[
-										_Utils_Tuple2(
-										'agentName',
-										$elm$json$Json$Encode$string(a)),
-										_Utils_Tuple2(
-										'worldRelations',
-										A2(
-											$elm$json$Json$Encode$list,
-											$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
-											rs))
-									]));
-						},
-						model.relations))
-				])));
-};
-var $elm$core$Debug$todo = _Debug_todo;
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -6557,6 +6518,82 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
+var $elm_community$list_extra$List$Extra$removeAt = F2(
+	function (index, l) {
+		if (index < 0) {
+			return l;
+		} else {
+			var _v0 = A2($elm$core$List$drop, index, l);
+			if (!_v0.b) {
+				return l;
+			} else {
+				var rest = _v0.b;
+				return _Utils_ap(
+					A2($elm$core$List$take, index, l),
+					rest);
+			}
+		}
+	});
+var $author$project$Main$toJson = function (model) {
+	return A2(
+		$elm$json$Json$Encode$encode,
+		4,
+		$elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'worlds',
+					A2(
+						$elm$json$Json$Encode$list,
+						function (_v0) {
+							var w = _v0.a;
+							return $elm$json$Json$Encode$int(w);
+						},
+						model.worlds)),
+					_Utils_Tuple2(
+					'valuations',
+					A2(
+						$elm$json$Json$Encode$list,
+						function (_v1) {
+							var w = _v1.a;
+							var ps = _v1.b;
+							return $elm$json$Json$Encode$object(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'world',
+										$elm$json$Json$Encode$int(w)),
+										_Utils_Tuple2(
+										'propositions',
+										A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
+									]));
+						},
+						model.worlds)),
+					_Utils_Tuple2(
+					'relations',
+					A2(
+						$elm$json$Json$Encode$list,
+						function (_v2) {
+							var a = _v2.a;
+							var rs = _v2.b;
+							return $elm$json$Json$Encode$object(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'agentName',
+										$elm$json$Json$Encode$string(a)),
+										_Utils_Tuple2(
+										'worldRelations',
+										A2(
+											$elm$json$Json$Encode$list,
+											$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
+											rs))
+									]));
+						},
+						model.relations))
+				])));
+};
+var $elm$core$Debug$todo = _Debug_todo;
 var $elm_community$list_extra$List$Extra$updateAt = F3(
 	function (index, fn, list) {
 		if (index < 0) {
@@ -6602,12 +6639,20 @@ var $author$project$Main$update = F2(
 					$elm$core$Maybe$withDefault,
 					0,
 					$elm$core$String$toInt(model.worldInput));
-				var updatedWorlds = _Utils_ap(
+				var worldExists = A2(
+					$elm$core$List$any,
+					function (_v2) {
+						var w = _v2.a;
+						return _Utils_eq(w, world);
+					},
+					model.worlds);
+				var updatedWorlds = worldExists ? model.worlds : _Utils_ap(
 					model.worlds,
 					_List_fromArray(
 						[
 							_Utils_Tuple2(world, _List_Nil)
 						]));
+				var _v1 = A2($elm$core$Debug$log, 'World exists', worldExists);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6621,6 +6666,20 @@ var $author$project$Main$update = F2(
 								_List_fromArray(
 									[''])),
 							worldInput: '',
+							worlds: updatedWorlds
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'RemoveWorld':
+				var index = msg.a;
+				var updatedWorlds = A2($elm_community$list_extra$List$Extra$removeAt, index, model.worlds);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							jsonOutput: $author$project$Main$toJson(
+								_Utils_update(
+									model,
+									{worlds: updatedWorlds})),
 							worlds: updatedWorlds
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6668,7 +6727,7 @@ var $author$project$Main$update = F2(
 				var updatedPropositions = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v1) {
+					function (_v3) {
 						return input;
 					},
 					model.propositionInputs);
@@ -6690,10 +6749,15 @@ var $author$project$Main$update = F2(
 				var updatedWorlds = A2(
 					$elm$core$List$indexedMap,
 					F2(
-						function (i, _v2) {
-							var w = _v2.a;
-							var ps = _v2.b;
-							return _Utils_eq(i, index) ? _Utils_Tuple2(
+						function (i, _v4) {
+							var w = _v4.a;
+							var ps = _v4.b;
+							return (_Utils_eq(i, index) && (!A2(
+								$elm$core$List$any,
+								function (p) {
+									return _Utils_eq(p, proposition);
+								},
+								ps))) ? _Utils_Tuple2(
 								w,
 								_Utils_ap(
 									ps,
@@ -6734,14 +6798,10 @@ var $author$project$Main$update = F2(
 				var updatedRelationInputs = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v7) {
+					function (_v5) {
 						return inputAsList;
 					},
 					model.relationInputs);
-				var _v3 = A2($elm$core$Debug$log, 'Input index', index);
-				var _v4 = A2($elm$core$Debug$log, 'Input value', input);
-				var _v5 = A2($elm$core$Debug$log, 'Input as list', inputAsList);
-				var _v6 = A2($elm$core$Debug$log, 'Updated relation inputs', updatedRelationInputs);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6751,9 +6811,9 @@ var $author$project$Main$update = F2(
 				var agentIndex = msg.a;
 				var maybeCurrentRelations = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relationInputs);
 				var currentRelations = A2($elm$core$Maybe$withDefault, _List_Nil, maybeCurrentRelations);
-				var updateRelations = function (_v10) {
-					var name = _v10.a;
-					var existingRelations = _v10.b;
+				var updateRelations = function (_v6) {
+					var name = _v6.a;
+					var existingRelations = _v6.b;
 					return _Utils_Tuple2(
 						name,
 						_Utils_ap(
@@ -6762,15 +6822,6 @@ var $author$project$Main$update = F2(
 								[currentRelations])));
 				};
 				var updatedRelations = A3($elm_community$list_extra$List$Extra$updateAt, agentIndex, updateRelations, model.relations);
-				var _v8 = A2($elm$core$Debug$log, 'Current relations', currentRelations);
-				var _v9 = A2(
-					$elm$core$Debug$log,
-					'Updated relations',
-					updateRelations(
-						A2(
-							$elm$core$Maybe$withDefault,
-							_Utils_Tuple2('', _List_Nil),
-							A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relations))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6825,8 +6876,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 225, column: 13},
-						end: {line: 225, column: 23}
+						start: {line: 226, column: 13},
+						end: {line: 226, column: 23}
 					})('TODO');
 		}
 	});
@@ -6965,6 +7016,9 @@ var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('
 var $author$project$Main$AddProposition = function (a) {
 	return {$: 'AddProposition', a: a};
 };
+var $author$project$Main$RemoveWorld = function (a) {
+	return {$: 'RemoveWorld', a: a};
+};
 var $author$project$Main$UpdatePropositionInput = F2(
 	function (a, b) {
 		return {$: 'UpdatePropositionInput', a: a, b: b};
@@ -6982,7 +7036,19 @@ var $author$project$Main$worldInputView = F3(
 			_List_fromArray(
 				[
 					$elm$html$Html$text(
-					'World ' + ($elm$core$String$fromInt(world) + ': ')),
+					'World ' + ($elm$core$String$fromInt(world) + ':   ')),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('button-secondary'),
+							$elm$html$Html$Events$onClick(
+							$author$project$Main$RemoveWorld(index))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Remove')
+						])),
 					A2(
 					$elm$html$Html$input,
 					_List_fromArray(
