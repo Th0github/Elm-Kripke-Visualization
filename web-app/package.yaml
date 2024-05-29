@@ -21,7 +21,7 @@ library:
 
 executables:
   myprogram:
-    main: Main.lhs
+    main: Main.hs
     source-dirs: exec
     dependencies:
       - web-app

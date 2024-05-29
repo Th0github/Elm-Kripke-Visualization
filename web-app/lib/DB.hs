@@ -2,15 +2,15 @@
 -- This section describes the database implementation
 
 -- \begin{code}
-module DB (save) where
+module DB (saveModel, getModel) where
 
 import Data.Aeson
 import Model
 
-save :: Model -> IO ()
-save = encodeFile "test.txt"
+saveModel :: Model -> IO ()
+saveModel = encodeFile "test.txt"
 
-get :: IO Model
-get = decodeFile ""
+getModel :: IO (Maybe Model)
+getModel = decodeFileStrict "test.txt"
 
 -- \end{code}

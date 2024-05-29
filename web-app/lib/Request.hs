@@ -62,10 +62,11 @@ handleRequest = scotty 3000 $ do
     text "This was a PUT request!"
   -- get model (json)
   get "/model" $ do
-    json muddyStart -- Call Model constructor and encode the result as JSON
+    model <- liftIO getModel
+    json model -- Call Model constructor and encode the result as JSON
   post "/model" $ do
     model <- jsonData :: ActionM Model -- Decode body of the POST request as an Model object
-    liftIO $ save model
+    liftIO $ saveModel model
     json model
   notFound $ do
     text "there is no such route."

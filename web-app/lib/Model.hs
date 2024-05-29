@@ -69,7 +69,7 @@ trueIn :: Model -> Form -> [World]
 trueIn (Mo u v r) f = filter (\w -> isTrue (Mo u v r, w) f) u
 
 instance FromJSON Model where
-  parseJSON (Object v) =
+  parseJSON =
     withObject
       "Object"
       ( \o ->
@@ -87,7 +87,7 @@ instance ToJSON Model where
   toJSON (Mo worlds' rel' val') =
     object
       [ "worlds" .= worlds',
-        "relations" .= map (\(a, ws) -> object ["agentName" .= a, "relations" .= ws]) rel',
+        "relations" .= map (\(a, ws) -> object ["agentName" .= a, "worldRelations" .= ws]) rel',
         "valuations" .= map (\(w, ps) -> object ["world" .= w, "propositions" .= ps]) val'
       ]
 
