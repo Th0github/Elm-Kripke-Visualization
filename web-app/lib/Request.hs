@@ -1,9 +1,6 @@
-
-\section{The most basic library}\label{sec:Request}
-
-This section describes request handling
-
-\begin{code}
+-- \section{The most basic library}\label{sec:Request}
+-- This section describes request handling
+-- \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Request
@@ -83,6 +80,6 @@ handleRequest = scotty 3000 $ do
 
 -- handler for when there is no matched route
 -- (this should be the last handler because it matches all routes)
-\end{code}
+-- \end{code}
 
-That's it, for now.
+-- That's it, for now.
