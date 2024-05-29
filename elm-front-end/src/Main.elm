@@ -1,16 +1,17 @@
 module Main exposing (..)
 
+import Api exposing (fetchedReadMe, postModel)
 import Browser
+import GraphKripke exposing (getSvg)
 import Html exposing (Html, br, button, div, h1, input, text)
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy)
 import Http
-import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (encode, int, list, object, string)
 import List.Extra
-import Markdown exposing (toHtml)
-import Model exposing (Model, newModelEncoder)
+import Markdown
+import Model exposing (Model)
 
 
 
@@ -48,7 +49,7 @@ type Msg
     | AddProposition Int
     | UpdateRelationInput Int String
     | AddRelation Int
-    | RecieveReadMe (Result Http.Error String)
+    | ReceiveReadMe (Result Http.Error String)
     | ToggleReadMe
     | FetchReadMe
     | PostKripkeModel
@@ -199,19 +200,19 @@ update msg model =
             )
 
         FetchReadMe ->
-            ( model, fetchedReadMe )
+            ( model, fetchedReadMe ReceiveReadMe )
 
-        RecieveReadMe (Ok content) ->
+        ReceiveReadMe (Ok content) ->
             ( { model | readMeContent = content }, Cmd.none )
 
-        RecieveReadMe (Err _) ->
+        ReceiveReadMe (Err _) ->
             ( { model | readMeContent = "Failed to fetch Readme content" }, Cmd.none )
 
         ToggleReadMe ->
             ( { model | showReadMe = not model.showReadMe }, Cmd.none )
 
         PostKripkeModel ->
-            Debug.log "Post" ( model, postModel model )
+            Debug.log "Post" ( model, postModel model PostedKripkeModel )
 
         -- let
         --     _ =
@@ -259,7 +260,7 @@ view model =
 
               else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], text model.jsonOutput ]
+                    [ text "Current JSON Output:", br [] [], getSvg ]
             ]
         ]
 
@@ -310,30 +311,6 @@ toJson model =
 
 
 -- Fetch Readme content
-
-
-fetchedReadMe : Cmd Msg
-fetchedReadMe =
-    Http.get
-        { url = "https://raw.githubusercontent.com/elm/browser/master/README.md"
-        , expect = Http.expectString RecieveReadMe
-        }
-
-
-postModel : Model -> Cmd Msg
-postModel model =
-    Http.request
-        { method = "POST"
-        , headers = []
-        , url = "http://127.0.0.1:3000/model"
-        , body = Http.jsonBody (newModelEncoder model)
-        , expect = Http.expectString PostedKripkeModel
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-
 -- SUBSCRIPTIONS
 
 
