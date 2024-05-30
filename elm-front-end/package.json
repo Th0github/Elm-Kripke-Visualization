@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "elm-json": "^0.2.13",
     "elm-test": "^0.19.1-revision12"
   }
 }

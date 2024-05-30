@@ -1,9 +1,6 @@
-
-\section{The most basic library}\label{sec:Request}
-
-This section describes request handling
-
-\begin{code}
+-- \section{The most basic library}\label{sec:Request}
+-- This section describes request handling
+-- \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Request
@@ -46,10 +43,11 @@ handleRequest = scotty 3000 $ do
     text "This was a PUT request!"
   -- get model (json)
   get "/model" $ do
-    json muddyStart -- Call Model constructor and encode the result as JSON
+    model <- liftIO getModel
+    json model -- Call Model constructor and encode the result as JSON
   post "/model" $ do
     model <- jsonData :: ActionM Model -- Decode body of the POST request as an Model object
-    liftIO $ save model
+    liftIO $ saveModel model
     json model
   notFound $ do -- handler for when there is no matched route
     text "there is no such route."
@@ -61,7 +59,7 @@ handleRequest = scotty 3000 $ do
             { corsMethods = "DELETE" : "PUT" : simpleMethods, -- simpleMethods are GET,HEAD,POST
               corsRequestHeaders = "Content-Type" : simpleHeaders
             }
+            
+-- \end{code}
 
-\end{code}
-
-That's it, for now.
+-- That's it, for now.
