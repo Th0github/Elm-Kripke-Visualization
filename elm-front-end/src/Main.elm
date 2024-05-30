@@ -1,10 +1,12 @@
 module Main exposing (..)
 
-import Api exposing (fetchElmStuff, fetchReadMe, postModel)
-import Browser
+import Api exposing (fetchElmStuff, fetchReadMe, postModel, evaluateModel)
+import Browser exposing (UrlRequest )
+import Browser.Navigation as Nav
+import Url exposing (Url)
 import GraphKripke exposing (getSvg)
 import Html exposing (Html, br, button, div, h1, input, pre, span, text)
-import Html.Attributes exposing (class, placeholder, value)
+import Html.Attributes exposing (class, placeholder, value, type_)
 import Html.Events exposing (onClick, onInput, onMouseEnter)
 import Html.Lazy exposing (lazy)
 import Http
@@ -14,6 +16,7 @@ import Markdown
 import Model exposing (Model)
 import Error exposing (KMError, errorToString)
 import KripkeModel exposing (KripkeModel)
+
 
 -- MODEL
 -- The model is initialized
@@ -34,6 +37,7 @@ init _ =
       , showGraph = False
       , error = Nothing
       , currentRelationInputs = []
+      , successMsg = ""
       }
     , Cmd.none
     )
@@ -65,6 +69,10 @@ type Msg
     | ToggleChoiceBox
     | VisualizeKripkeModel
     | ToggleShowGraph
+    | EvaluateKripkeModel
+    | EvaluatedKripkeModel (Result Http.Error String)
+    | UrlRequested Browser.UrlRequest
+    | UrlChanged Url.Url
 
 
 
@@ -311,15 +319,57 @@ update msg model =
             ( { model | showReadMe = not model.showReadMe }, Cmd.none )
 
         PostKripkeModel ->
-            Debug.log "Post" ( model, postModel model PostedKripkeModel )
+            (model, postModel model PostedKripkeModel)
+
+        PostedKripkeModel (Ok response) ->
+            let
+                _ = Debug.log "Post success response" response
+                _ = Debug.log "Aaaaaaaaa"
+            in
+            ( { model | successMsg = "Successfully posted model"}, Cmd.none )
+
+        PostedKripkeModel (Err httpError) ->
+            ( { model | error = Just Error.PostError }, Cmd.none )
+
+        EvaluateKripkeModel ->
+            let
+                _ =
+                    Debug.log "Validate"
+            in
+            ( model, evaluateModel model EvaluatedKripkeModel)
+
+        EvaluatedKripkeModel (Ok response) ->
+            let
+                _ =
+                    Debug.log "Validated" response
+            in
+            ( { model | successMsg = "Successfully validated model"}, Cmd.none )
+
+        EvaluatedKripkeModel (Err httpError) ->
+            let
+                _ =
+                    Debug.log "Validated Error"
+            in
+            ( { model | error = Just Error.PostError }, Cmd.none )
+        UrlRequested (Browser.Internal _) ->
+            ( model, Cmd.none )
+
+        UrlRequested (Browser.External "") ->
+            ( model, Cmd.none )
+
+        UrlRequested (Browser.External url) ->
+            ( model, Nav.load url )
+
+        UrlChanged _ ->
+            ( model, Cmd.none )
+
+
 
         -- let
         --     _ =
         --         Debug.log "Post"
         -- in
         -- ( model, postModel model )
-        PostedKripkeModel _ ->
-            ( model, Cmd.none )
 
         GotKripkeModel _ ->
             Debug.todo "TODO"
@@ -364,6 +414,7 @@ view model =
                   else
                     text ""
                 ]
+            , viewSuccess model.successMsg
             , viewError model.error
             , br [] []
             , text "Worlds"
@@ -379,9 +430,12 @@ view model =
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
-           , div [ class "container" ] (List.indexedMap (\index agent -> agentInputView index agent (List.Extra.getAt index model.currentRelationInputs |> Maybe.withDefault "")) model.agents)
-            , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
-            , button [ class "button", onClick VisualizeKripkeModel, onClick ToggleShowGraph] [ text "Visualize Model" ]
+            , div [ class "container" ] (List.indexedMap (\index agent -> agentInputView index agent (List.Extra.getAt index model.currentRelationInputs |> Maybe.withDefault "")) model.agents)
+            , div [class "buttons"] [
+             button [ type_ "button", class "button-red", onClick PostKripkeModel ] [ text "Post Model" ]
+            , button [type_ "button", class "button-purple", onClick EvaluateKripkeModel ] [ text "Evaluate Model" ]
+            , button [ type_ "button",class "button-blue", onClick VisualizeKripkeModel, onClick ToggleShowGraph] [ text "Toggle json/graph" ]
+            ]
             ]
 
         -- , div [class "container"] [ text "Readme:", br [] [], text model.readMeContent ] -- have html render on writeside
@@ -496,6 +550,13 @@ viewError maybeError =
         Nothing ->
             text ""
 
+viewSuccess : String -> Html msg
+viewSuccess msg =
+    if msg == "" then
+        text ""
+    else
+        div [ class "success" ] [ text msg ]
+
 
 highlightJson : String -> Html msg
 highlightJson jsonString =
@@ -560,9 +621,7 @@ highlightJson jsonString =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
+subscriptions model = Sub.none
 
 
 -- PROGRAM
