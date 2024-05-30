@@ -7096,8 +7096,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 324, column: 13},
-						end: {line: 324, column: 23}
+						start: {line: 325, column: 13},
+						end: {line: 325, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
 				var _v18 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
@@ -9595,94 +9595,6 @@ var $elm$core$Maybe$map2 = F3(
 			}
 		}
 	});
-var $author$project$GraphKripke$muddy = {
-	evaluations: _List_fromArray(
-		[
-			{propositions: _List_Nil, world: 0},
-			{
-			propositions: _List_fromArray(
-				[3]),
-			world: 1
-		},
-			{
-			propositions: _List_fromArray(
-				[2]),
-			world: 2
-		},
-			{
-			propositions: _List_fromArray(
-				[2, 3]),
-			world: 3
-		},
-			{
-			propositions: _List_fromArray(
-				[1]),
-			world: 4
-		},
-			{
-			propositions: _List_fromArray(
-				[1, 3]),
-			world: 5
-		},
-			{
-			propositions: _List_fromArray(
-				[1, 2]),
-			world: 6
-		},
-			{
-			propositions: _List_fromArray(
-				[1, 2, 3]),
-			world: 7
-		}
-		]),
-	relations: _List_fromArray(
-		[
-			{
-			agentName: '1',
-			worldRelations: _List_fromArray(
-				[
-					_List_fromArray(
-					[0, 4]),
-					_List_fromArray(
-					[2, 6]),
-					_List_fromArray(
-					[3, 7]),
-					_List_fromArray(
-					[1, 5])
-				])
-		},
-			{
-			agentName: '2',
-			worldRelations: _List_fromArray(
-				[
-					_List_fromArray(
-					[0, 2]),
-					_List_fromArray(
-					[4, 6]),
-					_List_fromArray(
-					[5, 7]),
-					_List_fromArray(
-					[1, 3])
-				])
-		},
-			{
-			agentName: '3',
-			worldRelations: _List_fromArray(
-				[
-					_List_fromArray(
-					[0, 1]),
-					_List_fromArray(
-					[4, 5]),
-					_List_fromArray(
-					[6, 7]),
-					_List_fromArray(
-					[2, 3])
-				])
-		}
-		]),
-	worlds: _List_fromArray(
-		[0, 1, 2, 3, 4, 5, 6, 7])
-};
 var $elm_community$intdict$IntDict$foldr = F3(
 	function (f, acc, dict) {
 		foldr:
@@ -9847,8 +9759,8 @@ var $elm_community$typed_svg$TypedSvg$Attributes$InPx$y2 = function (value) {
 	return $elm_community$typed_svg$TypedSvg$Attributes$y2(
 		$elm_community$typed_svg$TypedSvg$Types$px(value));
 };
-var $author$project$GraphKripke$getSvg = function () {
-	var graph = $author$project$GraphKripke$fromKripkeModelToGraph($author$project$GraphKripke$muddy);
+var $author$project$GraphKripke$getSvg = function (kripkeModel) {
+	var graph = $author$project$GraphKripke$fromKripkeModelToGraph(kripkeModel);
 	var links = A2(
 		$elm$core$List$map,
 		function (lnk) {
@@ -10001,7 +9913,7 @@ var $author$project$GraphKripke$getSvg = function () {
 					},
 					nodes))
 			]));
-}();
+};
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
@@ -10129,6 +10041,26 @@ var $author$project$Main$highlightJson = function (jsonString) {
 };
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
+var $author$project$Main$modelToKripke = function (model) {
+	var worlds = A2($elm$core$List$map, $elm$core$Tuple$first, model.worlds);
+	var relations = A2(
+		$elm$core$List$map,
+		function (_v1) {
+			var a = _v1.a;
+			var rs = _v1.b;
+			return {agentName: a, worldRelations: rs};
+		},
+		model.relations);
+	var evaluations = A2(
+		$elm$core$List$map,
+		function (_v0) {
+			var w = _v0.a;
+			var ps = _v0.b;
+			return {propositions: ps, world: w};
+		},
+		model.worlds);
+	return {evaluations: evaluations, relations: relations, worlds: worlds};
+};
 var $elm$html$Html$Events$onMouseEnter = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -10492,7 +10424,8 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Current Graph Output:'),
-								$author$project$GraphKripke$getSvg
+								$author$project$GraphKripke$getSvg(
+								$author$project$Main$modelToKripke(model))
 							])) : A2(
 						$elm$html$Html$div,
 						_List_fromArray(
