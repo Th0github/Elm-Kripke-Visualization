@@ -5484,10 +5484,18 @@ var $author$project$Main$subscriptions = function (model) {
 };
 var $author$project$Error$AgentDoesNotExist = {$: 'AgentDoesNotExist'};
 var $author$project$Error$AgentExists = {$: 'AgentExists'};
+var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
 var $author$project$Error$InvalidInput = {$: 'InvalidInput'};
 var $author$project$Error$InvalidRelationInput = {$: 'InvalidRelationInput'};
+var $author$project$Main$PostedKripkeModel = function (a) {
+	return {$: 'PostedKripkeModel', a: a};
+};
 var $author$project$Error$PropositionExists = {$: 'PropositionExists'};
+var $author$project$Main$ReceiveReadMe = function (a) {
+	return {$: 'ReceiveReadMe', a: a};
+};
 var $author$project$Error$RelationExists = {$: 'RelationExists'};
+var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
 var $author$project$Error$WorldExists = {$: 'WorldExists'};
 var $author$project$Error$WorldNotExists = {$: 'WorldNotExists'};
 var $elm$core$List$any = F2(
@@ -5533,9 +5541,6 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Main$RecieveReadMe = function (a) {
-	return {$: 'RecieveReadMe', a: a};
-};
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -6389,9 +6394,6 @@ var $author$project$Main$parseInputToRelation = function (input) {
 	var allValid = A2($elm$core$List$all, isValidInteger, inputAsList);
 	return allValid ? $elm$core$Maybe$Just(parsedInputAsList) : $elm$core$Maybe$Nothing;
 };
-var $author$project$Main$PostedKripkeModel = function (a) {
-	return {$: 'PostedKripkeModel', a: a};
-};
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
 		_Http_pair,
@@ -7004,6 +7006,7 @@ var $author$project$Main$update = F2(
 							var updatedModel = relationExists ? _Utils_update(
 								model,
 								{
+									currentRelationInputs: updatedCurrentRelationInputs,
 									error: $elm$core$Maybe$Just($author$project$Error$RelationExists)
 								}) : ((!worldsExist) ? _Utils_update(
 								model,
@@ -7093,16 +7096,16 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 293, column: 13},
-						end: {line: 293, column: 23}
+						start: {line: 322, column: 13},
+						end: {line: 322, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
-				var _v12 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
-				var updatedModel = _v12.a;
-				var cmd1 = _v12.b;
-				var _v13 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
-				var finalModel = _v13.a;
-				var cmd2 = _v13.b;
+				var _v18 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v18.a;
+				var cmd1 = _v18.b;
+				var _v19 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v19.a;
+				var cmd2 = _v19.b;
 				return _Utils_Tuple2(
 					finalModel,
 					$elm$core$Platform$Cmd$batch(
@@ -7860,6 +7863,15 @@ var $ianmackenzie$elm_units$Quantity$maximum = function (quantities) {
 	}
 };
 var $ianmackenzie$elm_units_prefixed$Units$Quantity$maximum = $ianmackenzie$elm_units$Quantity$maximum;
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $gampleman$elm_visualization$Force$Collision$nonEmptyMaximum = F2(
 	function (head, tail) {
 		return A2(
@@ -9053,11 +9065,6 @@ var $gampleman$elm_visualization$Force$entity = F2(
 			y: radius * $elm$core$Basics$sin(angle)
 		};
 	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $elm$core$String$concat = function (strings) {
 	return A2($elm$core$String$join, '', strings);
 };
@@ -10182,15 +10189,6 @@ var $author$project$Main$viewError = function (maybeError) {
 		return $elm$html$Html$text('');
 	}
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Main$AddProposition = function (a) {
 	return {$: 'AddProposition', a: a};
 };

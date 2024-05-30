@@ -10,7 +10,7 @@ import Html.Lazy exposing (lazy)
 import Http
 import Json.Encode exposing (encode, int, list, object, string)
 import List.Extra
-import Markdown exposing
+import Markdown
 import Model exposing (Model)
 import Error exposing (KMError, errorToString)
 
