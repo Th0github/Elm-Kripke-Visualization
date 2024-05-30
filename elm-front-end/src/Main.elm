@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, br, button, div, h1, input, text)
+import Html exposing (Html, br, button, div, h1, input, span, text, pre)
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy)
@@ -286,7 +286,7 @@ view model =
 
               else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], text model.jsonOutput ]
+                    [ text "Current JSON Output:", br [] [],highlightJson model.jsonOutput ]
             ]
         ]
 
@@ -370,9 +370,42 @@ postModel model =
         }
 
 
+highlightJson : String -> Html msg
+highlightJson jsonString =
+    let
+        highlight : Char -> Html msg
+        highlight c =
+            let
+                charStr = String.fromChar c
+            in
+            case c of
+                '{' -> span [ class "brace" ] [ text charStr ]
+                '}' -> span [ class "brace" ] [ text charStr ]
+                '[' -> span [ class "brace" ] [ text charStr ]
+                ']' -> span [ class "brace" ] [ text charStr ]
+                '"' ->
+                    if String.contains ": " (String.dropLeft 1 jsonString) then
+                        span [ class "key" ] [ text charStr ]
+                    else
+                        span [ class "string" ] [ text charStr ]
+                ',' -> text charStr
+                ':' -> text charStr
+                ' ' -> text charStr
+                '-' -> text charStr
+                '.' -> text charStr
+                _ ->
+                    if Char.isDigit c then
+                        span [ class "number" ] [ text charStr ]
+                    else if String.contains "truefalse" charStr then
+                        span [ class "boolean" ] [ text charStr ]
+                    else
+                        text charStr
+    in
+    pre [ class "syntax-highlighted-json" ]
+        (List.map highlight (String.toList jsonString))
+
 
 -- SUBSCRIPTIONS
-
 
 subscriptions : Model -> Sub Msg
 subscriptions model =

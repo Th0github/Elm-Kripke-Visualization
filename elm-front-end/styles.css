@@ -76,3 +76,37 @@ body, input, button, div {
   height: 100vh;
   overflow: auto;
 }
+
+/* JSON Viewer styles */
+.syntax-highlighted-json {
+  font-family: monospace;
+  white-space: pre;
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 5px;
+  overflow: auto;
+}
+
+.syntax-highlighted-json .key {
+  color: #922B21;
+}
+
+.syntax-highlighted-json .string {
+  color: #28B463;
+}
+
+.syntax-highlighted-json .number {
+  color: #1F618D;
+}
+
+.syntax-highlighted-json .boolean {
+  color: #AF7AC5;
+}
+
+.syntax-highlighted-json .null {
+  color: #7D3C98;
+}
+
+.syntax-highlighted-json .brace {
+  color: #000000;
+}
