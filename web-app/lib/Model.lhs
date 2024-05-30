@@ -1,13 +1,17 @@
---  \section{Model}\label{sec:Model}
---  This section describes the Model
---  \begin{code}
+\section{Model}\label{sec:Model}
+This section describes the Model
+post "/evaluate" $ do
+    formula <- jsonData :: ActionM Form
+    let trueWorlds = formula `trueIn` muddyStart
+    json trueWorlds
+\begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Model where
 
-import Control.Applicative ()
 import Data.Aeson
 import Data.Maybe
+import qualified Data.Aeson.KeyMap as HM
 
 -- Define the Model
 type Prop = Int
@@ -59,6 +63,9 @@ announce m@(Mo ws r v) f = Mo newWorlds newRel newVal
 (-->) :: Form -> Form -> Form
 (-->) f = Con (Neg f)
 
+conSet :: [Form] -> Form
+conSet = foldr1 Con
+
 dis :: Form -> Form -> Form
 dis f g = Neg (Con (Neg f) (Neg g))
 
@@ -88,6 +95,54 @@ muddyStart =
       (6, [1, 2]),
       (7, [1, 2, 3])
     ]
+
+atLeastOne :: Form
+atLeastOne = dis (P 1) (dis (P 2) (P 3))
+
+nobodyKnowsOwn :: Form
+nobodyKnowsOwn = conSet [Neg (K "1" (P 1)), Neg (K "2" (P 2)), Neg (K "3" (P 3))]
+
+everyoneKnowsAll :: Form
+everyoneKnowsAll = conSet [kw "1" (P 1), kw "2" (P 2), kw "3" (P 3)]
+
+test :: IO ()
+test = do
+  -- Read the JSON response from a file or from the network response
+  let jsonText = "{\"con\":[{\"p\":1},{\"neg\":{\"p\":2}}]}"
+  -- Decode the JSON into the Form data type
+  case decode jsonText of
+    Just form -> putStrLn $ "Decoded formula: " ++ show (form :: Form)
+    Nothing -> putStrLn "Failed to decode JSON"
+
+instance ToJSON Form where
+  toJSON Top = object ["top" .= True]
+  toJSON (P p) = object ["p" .= p]
+  toJSON (Neg f) = object ["neg" .= toJSON f]
+  toJSON (Con f g) = object ["con" .= toJSON [f, g]]
+  toJSON (K i f) = object ["knows" .= object ["agent" .= i, "formula" .= f]]
+  toJSON (Ann f g) = object ["announce" .= object ["formula" .= f, "result" .= g]]
+
+instance FromJSON Form where
+  parseJSON = withObject "form" $ \o -> do
+    let parseTop = return Top
+        parseP = P <$> o .: "p"
+        parseNeg = Neg <$> (o .: "neg" >>= parseJSON)
+        parseCon = do
+          subformulas <- o .: "con"
+          case subformulas of
+            [f, g] -> Con <$> parseJSON f <*> parseJSON g
+            _ -> fail "Con must contain exactly two subformulas"
+        parseK = K <$> o .: "agent" <*> (o .: "formula" >>= parseJSON)
+        parseAnn = Ann <$> o .: "announce" <*> (o .: "formula" >>= parseJSON)
+
+    case HM.keys o of
+      ["top"] -> parseTop
+      ["p"] -> parseP
+      ["neg"] -> parseNeg
+      ["con"] -> parseCon
+      ["k"] -> parseK
+      ["ann"] -> parseAnn
+      _ -> fail "Unknown form type"
 
 instance FromJSON Model where
   parseJSON =

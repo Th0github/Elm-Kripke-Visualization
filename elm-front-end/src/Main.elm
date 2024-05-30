@@ -31,6 +31,7 @@ init _ =
       , readMeContent = ""
       , showPopup = False
       , showReadMe = False
+      , showGraph = False
       , error = Nothing
       , currentRelationInputs = []
       }
@@ -62,7 +63,8 @@ type Msg
     | GotKripkeModel (Result Http.Error String)
     | ToggleAndFetch
     | ToggleChoiceBox
-
+    | VisualizeKripkeModel
+    | ToggleShowGraph
 
 
 
@@ -335,6 +337,11 @@ update msg model =
         ToggleChoiceBox ->
             ( { model | showPopup = not model.showPopup }, Cmd.none )
 
+        VisualizeKripkeModel ->
+            ( { model | jsonOutput = toJson model }, Cmd.none )
+
+        ToggleShowGraph ->
+            ( { model | showGraph = not model.showGraph }, Cmd.none )
 
 
 -- VIEW
@@ -374,6 +381,7 @@ view model =
             , br [] []
            , div [ class "container" ] (List.indexedMap (\index agent -> agentInputView index agent (List.Extra.getAt index model.currentRelationInputs |> Maybe.withDefault "")) model.agents)
             , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
+            , button [ class "button", onClick VisualizeKripkeModel, onClick ToggleShowGraph] [ text "Visualize Model" ]
             ]
 
         -- , div [class "container"] [ text "Readme:", br [] [], text model.readMeContent ] -- have html render on writeside
@@ -385,8 +393,12 @@ view model =
                     ]
 
               else
+                if model.showGraph then
+                    div [ class "container" ]
+                        [ text "Current Graph Output:", getSvg (modelToKripke model) ]
+                else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], highlightJson model.jsonOutput, getSvg (modelToKripke model) ]
+                    [ text "Current JSON Output:", highlightJson model.jsonOutput ]
             ]
         ]
 
