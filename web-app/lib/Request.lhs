@@ -6,11 +6,7 @@ This section describes request handling
 \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Request
-  ( handleRequest,
-    muddyStart,
-  )
-where
+module Request where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import DB
@@ -31,26 +27,6 @@ import Web.Scotty
     text,
   )
 
--- import Network.HTTP.Types
-
-muddyStart :: Model
-muddyStart =
-  Mo
-    [0, 1, 2, 3, 4, 5, 6, 7]
-    [ ("1", [[0, 4], [2, 6], [3, 7], [1, 5]]),
-      ("2", [[0, 2], [4, 6], [5, 7], [1, 3]]),
-      ("3", [[0, 1], [4, 5], [6, 7], [2, 3]])
-    ]
-    [ (0, []),
-      (1, [3]),
-      (2, [2]),
-      (3, [2, 3]),
-      (4, [1]),
-      (5, [1, 3]),
-      (6, [1, 2]),
-      (7, [1, 2, 3])
-    ]
-
 handleRequest :: IO ()
 handleRequest = scotty 3000 $ do
   middleware corsMiddleware
@@ -70,6 +46,10 @@ handleRequest = scotty 3000 $ do
     model <- jsonData :: ActionM Model -- Decode body of the POST request as an Model object
     liftIO $ save model
     json model
+  post "/evaluate" $ do
+    formula <- jsonData :: ActionM Form
+    let trueWorlds = formula `trueIn` muddyStart
+    json trueWorlds
   notFound $ do
     text "there is no such route."
   where
