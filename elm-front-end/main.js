@@ -6728,7 +6728,13 @@ var $author$project$Main$update = F2(
 										agents: _Utils_ap(
 											model.agents,
 											_List_fromArray(
-												[model.agentInput]))
+												[model.agentInput])),
+										relations: _Utils_ap(
+											model.relations,
+											_List_fromArray(
+												[
+													_Utils_Tuple2(model.agentInput, _List_Nil)
+												]))
 									})),
 							relationInputs: _Utils_ap(
 								model.relationInputs,
@@ -6740,6 +6746,22 @@ var $author$project$Main$update = F2(
 									[
 										_Utils_Tuple2(model.agentInput, _List_Nil)
 									]))
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'RemoveAgent':
+				var idx = msg.a;
+				var updatedRelations = A2($elm_community$list_extra$List$Extra$removeAt, idx, model.relations);
+				var updatedAgents = A2($elm_community$list_extra$List$Extra$removeAt, idx, model.agents);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							agents: updatedAgents,
+							jsonOutput: $author$project$Main$toJson(
+								_Utils_update(
+									model,
+									{agents: updatedAgents, relations: updatedRelations})),
+							relations: updatedRelations
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'UpdatePropositionInput':
@@ -6918,8 +6940,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 251, column: 13},
-						end: {line: 251, column: 23}
+						start: {line: 263, column: 13},
+						end: {line: 263, column: 23}
 					})('TODO');
 		}
 	});
@@ -6936,6 +6958,9 @@ var $author$project$Main$UpdateWorldInput = function (a) {
 };
 var $author$project$Main$AddRelation = function (a) {
 	return {$: 'AddRelation', a: a};
+};
+var $author$project$Main$RemoveAgent = function (a) {
+	return {$: 'RemoveAgent', a: a};
 };
 var $author$project$Main$UpdateRelationInput = F2(
 	function (a, b) {
@@ -7016,7 +7041,28 @@ var $author$project$Main$agentInputView = F2(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('Agent ' + (agent + ': ')),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('world-header')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Agent ' + (agent + ': ')),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button-secondary'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$RemoveAgent(index))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('X')
+								]))
+						])),
 					A2(
 					$elm$html$Html$input,
 					_List_fromArray(

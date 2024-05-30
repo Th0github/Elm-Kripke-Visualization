@@ -52,6 +52,7 @@ type Msg
     | FetchReadMe
     | PostKripkeModel
     | RemoveWorld Int
+    | RemoveAgent Int
     | PostedKripkeModel (Result Http.Error String)
     | GotKripkeModel (Result Http.Error String)
 
@@ -113,10 +114,21 @@ update msg model =
                 , relationInputs = model.relationInputs ++ [ [] ]
                 , relations = model.relations ++ [ ( model.agentInput, [] ) ]
                 , agentInput = ""
-                , jsonOutput = toJson { model | agents = model.agents ++ [ model.agentInput ] }
+                , jsonOutput = toJson { model | agents = model.agents ++ [ model.agentInput ],
+                relations = model.relations ++ [ ( model.agentInput, [] ) ]}
               }
             , Cmd.none
             )
+        RemoveAgent idx ->
+            let
+                updatedAgents =
+                    List.Extra.removeAt idx model.agents
+                updatedRelations =
+                    List.Extra.removeAt idx model.relations
+            in
+            ( { model | agents = updatedAgents, relations = updatedRelations,
+            jsonOutput = toJson { model | agents = updatedAgents, relations = updatedRelations }
+            }, Cmd.none )
 
         -- Updates the current proposition input for the given world index
         UpdatePropositionInput index input ->
@@ -312,7 +324,7 @@ worldInputView model index ( world, propositions ) =
 agentInputView : Int -> String -> Html Msg
 agentInputView index agent =
     div [ class "container" ]
-        [ text <| "Agent " ++ agent ++ ": "
+       [ div [class "world-header"] [ text <| "Agent " ++ agent ++ ": " , button [class "button-secondary", onClick (RemoveAgent index) ] [ text "X" ]]
         , input
             [ class "input"
             , placeholder "Add relation (list of worlds, space separated integers)"
