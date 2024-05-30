@@ -6250,10 +6250,15 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
+var $author$project$Main$fetchedElmStuff = $elm$http$Http$get(
+	{
+		expect: $elm$http$Http$expectString($author$project$Main$RecieveReadMe),
+		url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/ElmStuff.md'
+	});
 var $author$project$Main$fetchedReadMe = $elm$http$Http$get(
 	{
 		expect: $elm$http$Http$expectString($author$project$Main$RecieveReadMe),
-		url: 'https://raw.githubusercontent.com/elm/browser/master/README.md'
+		url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/HELP.md'
 	});
 var $elm$core$List$drop = F2(
 	function (n, list) {
@@ -6844,6 +6849,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'FetchReadMe':
 				return _Utils_Tuple2(model, $author$project$Main$fetchedReadMe);
+			case 'FetchElmStuffReadMe':
+				return _Utils_Tuple2(model, $author$project$Main$fetchedElmStuff);
 			case 'RecieveReadMe':
 				if (msg.a.$ === 'Ok') {
 					var content = msg.a.a;
@@ -6878,10 +6885,10 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 227, column: 13},
-						end: {line: 227, column: 23}
+						start: {line: 232, column: 13},
+						end: {line: 232, column: 23}
 					})('TODO');
-			default:
+			case 'ToggleAndFetch':
 				var _v7 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
 				var updatedModel = _v7.a;
 				var cmd1 = _v7.b;
@@ -6893,11 +6900,20 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[cmd1, cmd2])));
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showPopup: !model.showPopup}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$AddAgent = {$: 'AddAgent'};
 var $author$project$Main$AddWorld = {$: 'AddWorld'};
+var $author$project$Main$FetchElmStuffReadMe = {$: 'FetchElmStuffReadMe'};
 var $author$project$Main$PostKripkeModel = {$: 'PostKripkeModel'};
+var $author$project$Main$ToggleAndFetch = {$: 'ToggleAndFetch'};
+var $author$project$Main$ToggleChoiceBox = {$: 'ToggleChoiceBox'};
 var $author$project$Main$UpdateAgentInput = function (a) {
 	return {$: 'UpdateAgentInput', a: a};
 };
@@ -7015,6 +7031,12 @@ var $author$project$Main$agentInputView = F2(
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
+var $elm$html$Html$Events$onMouseEnter = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseenter',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm_explorations$markdown$Markdown$defaultOptions = {
 	defaultHighlighting: $elm$core$Maybe$Nothing,
 	githubFlavored: $elm$core$Maybe$Just(
@@ -7127,34 +7149,41 @@ var $author$project$Main$view = function (model) {
 								_List_fromArray(
 									[
 										$elm$html$Html$Attributes$class('button'),
-										$elm$html$Html$Events$onClick($author$project$Main$ToggleReadMe)
+										$elm$html$Html$Events$onMouseEnter($author$project$Main$ToggleChoiceBox),
+										$elm$html$Html$Events$onClick($author$project$Main$ToggleAndFetch)
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Toggle README/JSON')
+										$elm$html$Html$text('Toggle Help')
 									])),
-								A2(
-								$elm$html$Html$button,
+								model.showPopup ? A2(
+								$elm$html$Html$div,
+								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('button'),
-										$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Fetch README')
-									])),
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('button'),
-										$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Post Model')
-									]))
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Help Page')
+											])),
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchElmStuffReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Elm Stuff')
+											]))
+									])) : $elm$html$Html$text('')
 							])),
 						A2(
 						$elm$html$Html$input,
@@ -7216,7 +7245,18 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$Attributes$class('container')
 							]),
-						A2($elm$core$List$indexedMap, $author$project$Main$agentInputView, model.agents))
+						A2($elm$core$List$indexedMap, $author$project$Main$agentInputView, model.agents)),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('button'),
+								$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Post Model')
+							]))
 					])),
 				A2(
 				$elm$html$Html$div,
@@ -7236,7 +7276,7 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('REPORT')
+										$elm$html$Html$text('Documentation')
 									])),
 								A2(
 								$elm$html$Html$div,
