@@ -12,8 +12,7 @@ import Json.Encode exposing (encode, int, list, object, string)
 import List.Extra
 import Markdown
 import Model exposing (Model)
-
-
+import Error exposing (KMError, errorToString)
 
 -- MODEL
 -- The model is initialized
@@ -28,16 +27,15 @@ init _ =
       , worldInput = ""
       , agentInput = ""
       , propositionInputs = []
-      , relationInputs = []
       , readMeContent = ""
       , showPopup = False
       , showReadMe = False
       , showGraph = False
       , error = Nothing
+      , currentRelationInputs = []
       }
     , Cmd.none
     )
-
 
 
 -- UPDATE
@@ -59,12 +57,14 @@ type Msg
     | FetchElmStuffReadMe
     | PostKripkeModel
     | RemoveWorld Int
+    | RemoveAgent Int
     | PostedKripkeModel (Result Http.Error String)
     | GotKripkeModel (Result Http.Error String)
     | ToggleAndFetch
     | ToggleChoiceBox
     | VisualizeKripkeModel
     | ToggleShowGraph
+
 
 
 -- The update function takes a message and a model and returns a new model and a command.
@@ -90,13 +90,14 @@ update msg model =
                                     List.any (\( w, _ ) -> w == world) model.worlds
                             in
                             if worldExists then
-                                ( model.worlds, Just "Error: World already exists" )
-
+                                (model.worlds, Just Error.WorldExists)
                             else
                                 ( model.worlds ++ [ ( world, [] ) ], Nothing )
 
                         Nothing ->
-                            ( model.worlds, Just "Error: Invalid input" )
+                            (model.worlds, Just Error.InvalidInput)
+
+
             in
             ( { model
                 | worlds = updatedWorlds
@@ -129,15 +130,36 @@ update msg model =
 
         -- Adds the current agent input to the agents list
         AddAgent ->
-            ( { model
-                | agents = model.agents ++ [ model.agentInput ]
-                , relationInputs = model.relationInputs ++ [ [] ]
-                , relations = model.relations ++ [ ( model.agentInput, [] ) ]
-                , agentInput = ""
-                , jsonOutput = toJson { model | agents = model.agents ++ [ model.agentInput ] }
-              }
-            , Cmd.none
-            )
+            let
+                agentExists =
+                    List.any (\a -> a == model.agentInput) model.agents
+
+                updatedModel =
+                    if agentExists then
+                        { model | error = Just Error.AgentExists }
+                    else
+                        { model
+                            | agents = model.agents ++ [ model.agentInput ]
+                            , currentRelationInputs = model.currentRelationInputs ++ [""]
+                            , relations = model.relations ++ [ ( model.agentInput, [] ) ]
+                            , agentInput = ""
+                            , jsonOutput = toJson { model | agents = model.agents ++ [ model.agentInput ], relations = model.relations ++ [ ( model.agentInput, [] ) ] }
+                            , error = Nothing
+                        }
+            in
+            (updatedModel, Cmd.none)
+        RemoveAgent idx ->
+            let
+                updatedAgents =
+                    List.Extra.removeAt idx model.agents
+                updatedRelations =
+                    List.Extra.removeAt idx model.relations
+                updatedCurrentRelationInputs =
+                    List.Extra.removeAt idx model.currentRelationInputs
+            in
+            ( { model | agents = updatedAgents, relations = updatedRelations, currentRelationInputs = updatedCurrentRelationInputs,
+            jsonOutput = toJson { model | agents = updatedAgents, relations = updatedRelations}
+            }, Cmd.none )
 
         -- Updates the current proposition input for the given world index
         UpdatePropositionInput index input ->
@@ -182,13 +204,12 @@ update msg model =
                                             model.worlds
                             in
                             if propositionExists then
-                                ( updates, Just "Error: Proposition already exists" )
-
+                                (updates, Just Error.PropositionExists)
                             else
                                 ( updates, Nothing )
 
                         Nothing ->
-                            ( model.worlds, Just "Error: Invalid input" )
+                            (model.worlds, Just Error.InvalidInput)
             in
             ( { model
                 | worlds = updatedWorlds
@@ -211,46 +232,67 @@ update msg model =
         --Updates the current relation input for the given agent index
         UpdateRelationInput index input ->
             let
-                inputAsList =
-                    String.words input |> List.map (\n -> String.toInt n |> Maybe.withDefault 0)
-
-                updatedRelationInputs =
-                    List.Extra.updateAt index (\_ -> inputAsList) model.relationInputs
+                updatedCurrentRelationInputs =
+                    List.Extra.updateAt index (\a -> input) model.currentRelationInputs
             in
-            ( { model | relationInputs = updatedRelationInputs }, Cmd.none )
+            ( { model | currentRelationInputs = updatedCurrentRelationInputs }, Cmd.none )
 
-        -- Adds the current relation input to the relations list for the given agent index from the relationInputs list
         AddRelation agentIndex ->
             let
-                maybeCurrentRelations =
-                    List.Extra.getAt agentIndex model.relationInputs
+                maybeCurrentInput =
+                    List.Extra.getAt agentIndex model.currentRelationInputs
 
-                currentRelations =
-                    Maybe.withDefault [] maybeCurrentRelations
-
-                updateRelations ( name, existingRelations ) =
-                    ( name, existingRelations ++ [ currentRelations ] )
-
-                -- Update the relations for the found agent index
-                updatedRelations =
-                    List.Extra.updateAt agentIndex updateRelations model.relations
+                maybeAgentRelations =
+                    List.Extra.getAt agentIndex model.relations
             in
-            ( { model
-                | relations = updatedRelations
-                , relationInputs =
-                    List.indexedMap
-                        (\i r ->
-                            if i == agentIndex then
-                                []
+            case (maybeCurrentInput, maybeAgentRelations) of
+                (Just currentInput, Just (agentName, existingRelations)) ->
+                    case parseInputToRelation currentInput of
+                        Just parsedInput ->
+                            let
+                                relationExists =
+                                    List.member parsedInput existingRelations
 
-                            else
-                                r
-                        )
-                        model.relationInputs
-                , jsonOutput = toJson { model | relations = updatedRelations }
-              }
-            , Cmd.none
-            )
+                                worldsExist =
+                                    List.all (\w -> List.any (\(world, _) -> world == w) model.worlds) parsedInput
+
+                                _ =
+                                    Debug.log "Worlds Exist" worldsExist
+
+                                updatedRelations =
+                                    if relationExists then
+                                        model.relations
+                                    else
+                                        List.Extra.updateAt agentIndex (\_ -> (agentName, existingRelations ++ [parsedInput])) model.relations
+
+                                updatedCurrentRelationInputs =
+                                    List.Extra.updateAt agentIndex (\a -> "") model.currentRelationInputs
+
+                                updatedModel =
+                                    if relationExists then
+                                        { model | error = Just Error.RelationExists, currentRelationInputs = updatedCurrentRelationInputs }
+                                    else if not worldsExist then
+                                        { model | error = Just Error.WorldNotExists }
+                                    else
+                                        { model
+                                            | relations = updatedRelations
+                                            , currentRelationInputs = updatedCurrentRelationInputs
+                                            , error = Nothing
+                                            , jsonOutput = toJson { model | relations = updatedRelations }
+                                        }
+                            in
+                            ( updatedModel, Cmd.none )
+
+                        Nothing ->
+                            ( { model | error = Just Error.InvalidRelationInput }, Cmd.none )
+
+                (Nothing, _) ->
+                    ( { model | error = Just Error.InvalidRelationInput }, Cmd.none )
+
+                (_, Nothing) ->
+                    ( { model | error = Just Error.AgentDoesNotExist }, Cmd.none )
+
+
 
         FetchReadMe ->
             ( model, fetchReadMe ReceiveReadMe )
@@ -336,7 +378,7 @@ view model =
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
-            , div [ class "container" ] (List.indexedMap agentInputView model.agents)
+           , div [ class "container" ] (List.indexedMap (\index agent -> agentInputView index agent (List.Extra.getAt index model.currentRelationInputs |> Maybe.withDefault "")) model.agents)
             , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
             , button [ class "button", onClick VisualizeKripkeModel, onClick ToggleShowGraph] [ text "Visualize Model" ]
             ]
@@ -369,22 +411,49 @@ worldInputView model index ( world, propositions ) =
         , br [] []
         ]
 
+parseInputToRelation : String -> Maybe (List Int)
+parseInputToRelation input =
+    let
+        isValidInteger s =
+            case String.toInt s of
+                Just _ -> True
+                Nothing -> False
 
-agentInputView : Int -> String -> Html Msg
-agentInputView index agent =
+        inputAsList =
+            String.words input
+
+        allValid =
+            List.all isValidInteger inputAsList
+
+        parsedInputAsList =
+            List.filterMap String.toInt inputAsList
+    in
+    if allValid then
+        Just parsedInputAsList
+    else
+        Nothing
+
+
+
+agentInputView : Int -> String -> String -> Html Msg
+agentInputView index agentName currentValue =
     div [ class "container" ]
-        [ text <| "Agent " ++ agent ++ ": "
+        [ div [ class "world-header" ]
+            [ text <| "Agent " ++ agentName ++ ": "
+            , button [ class "button-secondary", onClick (RemoveAgent index) ] [ text "X" ]
+            ]
         , input
             [ class "input"
             , placeholder "Add relation (list of worlds, space separated integers)"
             , onInput (UpdateRelationInput index)
-
-            -- , value (List.Extra.getAt index model.re)
+            , value currentValue
             ]
             []
         , button [ class "button", onClick (AddRelation index) ] [ text "Add Relation" ]
         , br [] []
         ]
+
+
 
 
 
@@ -403,12 +472,11 @@ toJson model =
         |> encode 4
 
 
-viewError : Maybe String -> Html msg
+viewError : Maybe KMError -> Html msg
 viewError maybeError =
     case maybeError of
         Just errorMsg ->
-            div [ class "error" ] [ text errorMsg ]
-
+            div [ class "error" ] [ text (errorToString errorMsg)]
         Nothing ->
             text ""
 

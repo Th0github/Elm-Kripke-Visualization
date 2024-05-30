@@ -1,6 +1,7 @@
 module Model exposing (Model, World, newModelEncoder)
 
 import Json.Encode exposing (Value, int, list, object, string)
+import Error exposing (KMError)
 
 
 type alias World =
@@ -15,12 +16,11 @@ type alias Model =
     , worldInput : String
     , agentInput : String
     , propositionInputs : List String -- Proposition inputs for each world
-    , relationInputs : List (List Int) -- Relation inputs for each agent 2d list to map agent index to relations
+    , currentRelationInputs : List String -- Current relation inputs for the selected agent
     , readMeContent : String -- Readme content
     , showPopup : Bool -- Show the popup
     , showReadMe : Bool -- Show the Readme content
-    , error : Maybe String -- Error message
-    , showGraph : Bool -- Show the graph
+    , error : Maybe KMError -- Error message
     }
 
 
