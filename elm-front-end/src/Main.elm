@@ -52,6 +52,7 @@ type Msg
     | ToggleReadMe
     | FetchReadMe
     | PostKripkeModel
+    | RemoveWorld Int
     | PostedKripkeModel (Result Http.Error String)
     | GotKripkeModel (Result Http.Error String)
 
@@ -67,8 +68,18 @@ update msg model =
                 world =
                     String.toInt model.worldInput |> Maybe.withDefault 0
 
+                worldExists =
+                    List.any (\(w, _) -> w == world) model.worlds
+
+                _ =
+                    Debug.log "World exists" worldExists
+
                 updatedWorlds =
-                    model.worlds ++ [ ( world, [] ) ]
+                    if worldExists then
+                        model.worlds
+                    else
+                        model.worlds ++ [ ( world, [] ) ]
+
             in
             ( { model
                 | worlds = updatedWorlds
@@ -78,6 +89,14 @@ update msg model =
               }
             , Cmd.none
             )
+        RemoveWorld index ->
+            let
+                updatedWorlds = List.Extra.removeAt index model.worlds
+            in
+            ( { model | worlds = updatedWorlds, jsonOutput = {
+                model | worlds = updatedWorlds
+            } |> toJson
+            }, Cmd.none )
 
         UpdateAgentInput input ->
             ( { model | agentInput = input }, Cmd.none )
@@ -111,9 +130,8 @@ update msg model =
                 updatedWorlds =
                     List.indexedMap
                         (\i ( w, ps ) ->
-                            if i == index then
+                            if i == index && not (List.any (\p -> p == proposition) ps) then
                                 ( w, ps ++ [ proposition ] )
-
                             else
                                 ( w, ps )
                         )
@@ -135,27 +153,15 @@ update msg model =
               }
             , Cmd.none
             )
-
         --Updates the current relation input for the given agent index
         UpdateRelationInput index input ->
             let
-                _ =
-                    Debug.log "Input index" index
-
-                _ =
-                    Debug.log "Input value" input
 
                 inputAsList =
                     String.words input |> List.map (\n -> String.toInt n |> Maybe.withDefault 0)
 
-                _ =
-                    Debug.log "Input as list" inputAsList
-
                 updatedRelationInputs =
                     List.Extra.updateAt index (\_ -> inputAsList) model.relationInputs
-
-                _ =
-                    Debug.log "Updated relation inputs" updatedRelationInputs
             in
             ( { model | relationInputs = updatedRelationInputs }, Cmd.none )
 
@@ -171,15 +177,10 @@ update msg model =
                 updateRelations ( name, existingRelations ) =
                     ( name, existingRelations ++ [ currentRelations ] )
 
-                _ =
-                    Debug.log "Current relations" currentRelations
-
-                _ =
-                    Debug.log "Updated relations" (updateRelations (List.Extra.getAt agentIndex model.relations |> Maybe.withDefault ( "", [] )))
-
                 -- Update the relations for the found agent index
                 updatedRelations =
                     List.Extra.updateAt agentIndex updateRelations model.relations
+
             in
             ( { model
                 | relations = updatedRelations
@@ -267,12 +268,13 @@ view model =
 worldInputView : Model -> Int -> ( Int, List Int ) -> Html Msg
 worldInputView model index ( world, propositions ) =
     div [ class "container" ]
-        [ text <| "World " ++ String.fromInt world ++ ": "
+        [ text <| "World " ++ String.fromInt world ++ ":   " , button [ class "button-secondary", onClick (RemoveWorld index) ] [ text "Remove" ]
         , input [ class "input", placeholder "Add proposition (integer)", onInput (UpdatePropositionInput index), value (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") ] []
         , button [ class "button", onClick (AddProposition index) ] [ text "Add Proposition" ]
         , text <| " Propositions: " ++ String.join ", " (List.map String.fromInt propositions)
         , br [] []
         ]
+
 
 
 agentInputView : Int -> String -> Html Msg
