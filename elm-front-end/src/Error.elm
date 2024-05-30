@@ -9,6 +9,7 @@ type KMError
     | PropositionExists
     | RelationExists
     | InvalidRelationInput
+    | WorldNotExists
     | NetworkError Http.Error
     | OtherError String
 
@@ -20,16 +21,19 @@ errorToString error =
         AgentDoesNotExist ->
             "Error: Agent does not exist"
         InvalidRelationInput ->
-            "Error: Invalid relation input,"
-
-        InvalidInput ->
-            "Error: Invalid input,"
+            "Error: Invalid relation input"
 
         WorldExists ->
-            "Error: World already exists "
+            "Error: World already exists"
+
+        InvalidInput ->
+            "Error: Invalid input"
+
+        WorldNotExists ->
+            "Error: Not all worlds int the relation exist"
 
         PropositionExists ->
-            "Error: Proposition already exists, "
+            "Error: Proposition already exists"
 
         RelationExists ->
             "Error: Relation already exists, "

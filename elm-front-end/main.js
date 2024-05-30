@@ -5452,15 +5452,7 @@ var $author$project$Error$InvalidRelationInput = {$: 'InvalidRelationInput'};
 var $author$project$Error$PropositionExists = {$: 'PropositionExists'};
 var $author$project$Error$RelationExists = {$: 'RelationExists'};
 var $author$project$Error$WorldExists = {$: 'WorldExists'};
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
+var $author$project$Error$WorldNotExists = {$: 'WorldNotExists'};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -5480,6 +5472,28 @@ var $elm$core$List$any = F2(
 					continue any;
 				}
 			}
+		}
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
 		}
 	});
 var $author$project$Main$RecieveReadMe = function (a) {
@@ -6314,19 +6328,6 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
-var $elm$core$Basics$not = _Basics_not;
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
 var $elm$core$String$words = _String_words;
 var $author$project$Main$parseInputToRelation = function (input) {
 	var isValidInteger = function (s) {
@@ -6921,6 +6922,18 @@ var $author$project$Main$update = F2(
 						var _v12 = $author$project$Main$parseInputToRelation(currentInput);
 						if (_v12.$ === 'Just') {
 							var parsedInput = _v12.a;
+							var worldsExist = A2(
+								$elm$core$List$all,
+								function (w) {
+									return A2(
+										$elm$core$List$any,
+										function (_v15) {
+											var world = _v15.a;
+											return _Utils_eq(world, w);
+										},
+										model.worlds);
+								},
+								parsedInput);
 							var updatedCurrentRelationInputs = A3(
 								$elm_community$list_extra$List$Extra$updateAt,
 								agentIndex,
@@ -6932,7 +6945,7 @@ var $author$project$Main$update = F2(
 							var updatedRelations = relationExists ? model.relations : A3(
 								$elm_community$list_extra$List$Extra$updateAt,
 								agentIndex,
-								function (_v13) {
+								function (_v14) {
 									return _Utils_Tuple2(
 										agentName,
 										_Utils_ap(
@@ -6945,6 +6958,10 @@ var $author$project$Main$update = F2(
 								model,
 								{
 									error: $elm$core$Maybe$Just($author$project$Error$RelationExists)
+								}) : ((!worldsExist) ? _Utils_update(
+								model,
+								{
+									error: $elm$core$Maybe$Just($author$project$Error$WorldNotExists)
 								}) : _Utils_update(
 								model,
 								{
@@ -6955,7 +6972,8 @@ var $author$project$Main$update = F2(
 											model,
 											{relations: updatedRelations})),
 									relations: updatedRelations
-								});
+								}));
+							var _v13 = A2($elm$core$Debug$log, 'Worlds Exist', worldsExist);
 							return _Utils_Tuple2(updatedModel, $elm$core$Platform$Cmd$none);
 						} else {
 							return _Utils_Tuple2(
@@ -6967,7 +6985,7 @@ var $author$project$Main$update = F2(
 								$elm$core$Platform$Cmd$none);
 						}
 					} else {
-						var _v15 = _v10.b;
+						var _v17 = _v10.b;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
@@ -6977,7 +6995,7 @@ var $author$project$Main$update = F2(
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
-					var _v14 = _v10.a;
+					var _v16 = _v10.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7022,8 +7040,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 285, column: 13},
-						end: {line: 285, column: 23}
+						start: {line: 293, column: 13},
+						end: {line: 293, column: 23}
 					})('TODO');
 		}
 	});
@@ -7332,13 +7350,15 @@ var $author$project$Error$errorToString = function (error) {
 		case 'AgentDoesNotExist':
 			return 'Error: Agent does not exist';
 		case 'InvalidRelationInput':
-			return 'Error: Invalid relation input,';
-		case 'InvalidInput':
-			return 'Error: Invalid input,';
+			return 'Error: Invalid relation input';
 		case 'WorldExists':
-			return 'Error: World already exists ';
+			return 'Error: World already exists';
+		case 'InvalidInput':
+			return 'Error: Invalid input';
+		case 'WorldNotExists':
+			return 'Error: Not all worlds int the relation exist';
 		case 'PropositionExists':
-			return 'Error: Proposition already exists, ';
+			return 'Error: Proposition already exists';
 		case 'RelationExists':
 			return 'Error: Relation already exists, ';
 		case 'NetworkError':

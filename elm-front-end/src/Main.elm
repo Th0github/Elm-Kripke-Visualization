@@ -225,6 +225,12 @@ update msg model =
                                 relationExists =
                                     List.member parsedInput existingRelations
 
+                                worldsExist =
+                                    List.all (\w -> List.any (\(world, _) -> world == w) model.worlds) parsedInput
+
+                                _ =
+                                    Debug.log "Worlds Exist" worldsExist
+
                                 updatedRelations =
                                     if relationExists then
                                         model.relations
@@ -236,7 +242,9 @@ update msg model =
 
                                 updatedModel =
                                     if relationExists then
-                                        { model | error = Just Error.RelationExists }
+                                        { model | error = Just Error.RelationExists, currentRelationInputs = updatedCurrentRelationInputs }
+                                    else if not worldsExist then
+                                        { model | error = Just Error.WorldNotExists }
                                     else
                                         { model
                                             | relations = updatedRelations
