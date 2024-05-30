@@ -5437,7 +5437,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{agentInput: '', agents: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
+		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5445,6 +5445,13 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Error$AgentDoesNotExist = {$: 'AgentDoesNotExist'};
+var $author$project$Error$AgentExists = {$: 'AgentExists'};
+var $author$project$Error$InvalidInput = {$: 'InvalidInput'};
+var $author$project$Error$InvalidRelationInput = {$: 'InvalidRelationInput'};
+var $author$project$Error$PropositionExists = {$: 'PropositionExists'};
+var $author$project$Error$RelationExists = {$: 'RelationExists'};
+var $author$project$Error$WorldExists = {$: 'WorldExists'};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -6298,7 +6305,43 @@ var $elm_community$list_extra$List$Extra$getAt = F2(
 			A2($elm$core$List$drop, idx, xs));
 	});
 var $elm$core$Debug$log = _Debug_log;
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
 var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $elm$core$String$words = _String_words;
+var $author$project$Main$parseInputToRelation = function (input) {
+	var isValidInteger = function (s) {
+		var _v0 = $elm$core$String$toInt(s);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	var inputAsList = $elm$core$String$words(input);
+	var parsedInputAsList = A2($elm$core$List$filterMap, $elm$core$String$toInt, inputAsList);
+	var allValid = A2($elm$core$List$all, isValidInteger, inputAsList);
+	return allValid ? $elm$core$Maybe$Just(parsedInputAsList) : $elm$core$Maybe$Nothing;
+};
 var $author$project$Main$PostedKripkeModel = function (a) {
 	return {$: 'PostedKripkeModel', a: a};
 };
@@ -6623,16 +6666,6 @@ var $elm_community$list_extra$List$Extra$updateAt = F3(
 			}
 		}
 	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $elm$core$String$words = _String_words;
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6657,7 +6690,7 @@ var $author$project$Main$update = F2(
 							model.worlds);
 						return worldExists ? _Utils_Tuple2(
 							model.worlds,
-							$elm$core$Maybe$Just('Error: World already exists')) : _Utils_Tuple2(
+							$elm$core$Maybe$Just($author$project$Error$WorldExists)) : _Utils_Tuple2(
 							_Utils_ap(
 								model.worlds,
 								_List_fromArray(
@@ -6668,7 +6701,7 @@ var $author$project$Main$update = F2(
 					} else {
 						return _Utils_Tuple2(
 							model.worlds,
-							$elm$core$Maybe$Just('Error: Invalid input'));
+							$elm$core$Maybe$Just($author$project$Error$InvalidInput));
 					}
 				}();
 				var updatedWorlds = _v1.a;
@@ -6712,51 +6745,63 @@ var $author$project$Main$update = F2(
 						{agentInput: input}),
 					$elm$core$Platform$Cmd$none);
 			case 'AddAgent':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							agentInput: '',
-							agents: _Utils_ap(
-								model.agents,
-								_List_fromArray(
-									[model.agentInput])),
-							jsonOutput: $author$project$Main$toJson(
-								_Utils_update(
-									model,
-									{
-										agents: _Utils_ap(
-											model.agents,
-											_List_fromArray(
-												[model.agentInput])),
-										relations: _Utils_ap(
-											model.relations,
-											_List_fromArray(
-												[
-													_Utils_Tuple2(model.agentInput, _List_Nil)
-												]))
-									})),
-							relationInputs: _Utils_ap(
-								model.relationInputs,
-								_List_fromArray(
-									[_List_Nil])),
-							relations: _Utils_ap(
-								model.relations,
-								_List_fromArray(
-									[
-										_Utils_Tuple2(model.agentInput, _List_Nil)
-									]))
-						}),
-					$elm$core$Platform$Cmd$none);
+				var agentExists = A2(
+					$elm$core$List$any,
+					function (a) {
+						return _Utils_eq(a, model.agentInput);
+					},
+					model.agents);
+				var updatedModel = agentExists ? _Utils_update(
+					model,
+					{
+						error: $elm$core$Maybe$Just($author$project$Error$AgentExists)
+					}) : _Utils_update(
+					model,
+					{
+						agentInput: '',
+						agents: _Utils_ap(
+							model.agents,
+							_List_fromArray(
+								[model.agentInput])),
+						currentRelationInputs: _Utils_ap(
+							model.currentRelationInputs,
+							_List_fromArray(
+								[''])),
+						error: $elm$core$Maybe$Nothing,
+						jsonOutput: $author$project$Main$toJson(
+							_Utils_update(
+								model,
+								{
+									agents: _Utils_ap(
+										model.agents,
+										_List_fromArray(
+											[model.agentInput])),
+									relations: _Utils_ap(
+										model.relations,
+										_List_fromArray(
+											[
+												_Utils_Tuple2(model.agentInput, _List_Nil)
+											]))
+								})),
+						relations: _Utils_ap(
+							model.relations,
+							_List_fromArray(
+								[
+									_Utils_Tuple2(model.agentInput, _List_Nil)
+								]))
+					});
+				return _Utils_Tuple2(updatedModel, $elm$core$Platform$Cmd$none);
 			case 'RemoveAgent':
 				var idx = msg.a;
 				var updatedRelations = A2($elm_community$list_extra$List$Extra$removeAt, idx, model.relations);
+				var updatedCurrentRelationInputs = A2($elm_community$list_extra$List$Extra$removeAt, idx, model.currentRelationInputs);
 				var updatedAgents = A2($elm_community$list_extra$List$Extra$removeAt, idx, model.agents);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							agents: updatedAgents,
+							currentRelationInputs: updatedCurrentRelationInputs,
 							jsonOutput: $author$project$Main$toJson(
 								_Utils_update(
 									model,
@@ -6819,11 +6864,11 @@ var $author$project$Main$update = F2(
 							model.worlds);
 						return propositionExists ? _Utils_Tuple2(
 							updates,
-							$elm$core$Maybe$Just('Error: Proposition already exists')) : _Utils_Tuple2(updates, $elm$core$Maybe$Nothing);
+							$elm$core$Maybe$Just($author$project$Error$PropositionExists)) : _Utils_Tuple2(updates, $elm$core$Maybe$Nothing);
 					} else {
 						return _Utils_Tuple2(
 							model.worlds,
-							$elm$core$Maybe$Just('Error: Invalid input'));
+							$elm$core$Maybe$Just($author$project$Error$InvalidInput));
 					}
 				}();
 				var updatedWorlds = _v5.a;
@@ -6850,60 +6895,97 @@ var $author$project$Main$update = F2(
 			case 'UpdateRelationInput':
 				var index = msg.a;
 				var input = msg.b;
-				var inputAsList = A2(
-					$elm$core$List$map,
-					function (n) {
-						return A2(
-							$elm$core$Maybe$withDefault,
-							0,
-							$elm$core$String$toInt(n));
-					},
-					$elm$core$String$words(input));
-				var updatedRelationInputs = A3(
+				var updatedCurrentRelationInputs = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v10) {
-						return inputAsList;
+					function (a) {
+						return input;
 					},
-					model.relationInputs);
+					model.currentRelationInputs);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{relationInputs: updatedRelationInputs}),
+						{currentRelationInputs: updatedCurrentRelationInputs}),
 					$elm$core$Platform$Cmd$none);
 			case 'AddRelation':
 				var agentIndex = msg.a;
-				var maybeCurrentRelations = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relationInputs);
-				var currentRelations = A2($elm$core$Maybe$withDefault, _List_Nil, maybeCurrentRelations);
-				var updateRelations = function (_v11) {
-					var name = _v11.a;
-					var existingRelations = _v11.b;
-					return _Utils_Tuple2(
-						name,
-						_Utils_ap(
-							existingRelations,
-							_List_fromArray(
-								[currentRelations])));
-				};
-				var updatedRelations = A3($elm_community$list_extra$List$Extra$updateAt, agentIndex, updateRelations, model.relations);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							jsonOutput: $author$project$Main$toJson(
+				var maybeCurrentInput = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.currentRelationInputs);
+				var maybeAgentRelations = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relations);
+				var _v10 = _Utils_Tuple2(maybeCurrentInput, maybeAgentRelations);
+				if (_v10.a.$ === 'Just') {
+					if (_v10.b.$ === 'Just') {
+						var currentInput = _v10.a.a;
+						var _v11 = _v10.b.a;
+						var agentName = _v11.a;
+						var existingRelations = _v11.b;
+						var _v12 = $author$project$Main$parseInputToRelation(currentInput);
+						if (_v12.$ === 'Just') {
+							var parsedInput = _v12.a;
+							var updatedCurrentRelationInputs = A3(
+								$elm_community$list_extra$List$Extra$updateAt,
+								agentIndex,
+								function (a) {
+									return '';
+								},
+								model.currentRelationInputs);
+							var relationExists = A2($elm$core$List$member, parsedInput, existingRelations);
+							var updatedRelations = relationExists ? model.relations : A3(
+								$elm_community$list_extra$List$Extra$updateAt,
+								agentIndex,
+								function (_v13) {
+									return _Utils_Tuple2(
+										agentName,
+										_Utils_ap(
+											existingRelations,
+											_List_fromArray(
+												[parsedInput])));
+								},
+								model.relations);
+							var updatedModel = relationExists ? _Utils_update(
+								model,
+								{
+									error: $elm$core$Maybe$Just($author$project$Error$RelationExists)
+								}) : _Utils_update(
+								model,
+								{
+									currentRelationInputs: updatedCurrentRelationInputs,
+									error: $elm$core$Maybe$Nothing,
+									jsonOutput: $author$project$Main$toJson(
+										_Utils_update(
+											model,
+											{relations: updatedRelations})),
+									relations: updatedRelations
+								});
+							return _Utils_Tuple2(updatedModel, $elm$core$Platform$Cmd$none);
+						} else {
+							return _Utils_Tuple2(
 								_Utils_update(
 									model,
-									{relations: updatedRelations})),
-							relationInputs: A2(
-								$elm$core$List$indexedMap,
-								F2(
-									function (i, r) {
-										return _Utils_eq(i, agentIndex) ? _List_Nil : r;
+									{
+										error: $elm$core$Maybe$Just($author$project$Error$InvalidRelationInput)
 									}),
-								model.relationInputs),
-							relations: updatedRelations
-						}),
-					$elm$core$Platform$Cmd$none);
+								$elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var _v15 = _v10.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									error: $elm$core$Maybe$Just($author$project$Error$AgentDoesNotExist)
+								}),
+							$elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var _v14 = _v10.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								error: $elm$core$Maybe$Just($author$project$Error$InvalidRelationInput)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
 			case 'FetchReadMe':
 				return _Utils_Tuple2(model, $author$project$Main$fetchedReadMe);
 			case 'RecieveReadMe':
@@ -6940,8 +7022,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 263, column: 13},
-						end: {line: 263, column: 23}
+						start: {line: 285, column: 13},
+						end: {line: 285, column: 23}
 					})('TODO');
 		}
 	});
@@ -7031,8 +7113,9 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$agentInputView = F2(
-	function (index, agent) {
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Main$agentInputView = F3(
+	function (index, agentName, currentValue) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -7049,7 +7132,7 @@ var $author$project$Main$agentInputView = F2(
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('Agent ' + (agent + ': ')),
+							$elm$html$Html$text('Agent ' + (agentName + ': ')),
 							A2(
 							$elm$html$Html$button,
 							_List_fromArray(
@@ -7070,7 +7153,8 @@ var $author$project$Main$agentInputView = F2(
 							$elm$html$Html$Attributes$class('input'),
 							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds, space separated integers)'),
 							$elm$html$Html$Events$onInput(
-							$author$project$Main$UpdateRelationInput(index))
+							$author$project$Main$UpdateRelationInput(index)),
+							$elm$html$Html$Attributes$value(currentValue)
 						]),
 					_List_Nil),
 					A2(
@@ -7224,7 +7308,47 @@ var $elm_explorations$markdown$Markdown$defaultOptions = {
 };
 var $elm_explorations$markdown$Markdown$toHtmlWith = _Markdown_toHtml;
 var $elm_explorations$markdown$Markdown$toHtml = $elm_explorations$markdown$Markdown$toHtmlWith($elm_explorations$markdown$Markdown$defaultOptions);
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Error$httpErrorToString = function (httpError) {
+	switch (httpError.$) {
+		case 'BadUrl':
+			var url = httpError.a;
+			return 'Bad URL: ' + url;
+		case 'Timeout':
+			return 'Request timed out';
+		case 'NetworkError':
+			return 'Network error';
+		case 'BadStatus':
+			var response = httpError.a;
+			return 'Bad status: ' + $elm$core$String$fromInt(response);
+		default:
+			var body = httpError.a;
+			return 'Bad body: ' + body;
+	}
+};
+var $author$project$Error$errorToString = function (error) {
+	switch (error.$) {
+		case 'AgentExists':
+			return 'Error: Agent already exists';
+		case 'AgentDoesNotExist':
+			return 'Error: Agent does not exist';
+		case 'InvalidRelationInput':
+			return 'Error: Invalid relation input,';
+		case 'InvalidInput':
+			return 'Error: Invalid input,';
+		case 'WorldExists':
+			return 'Error: World already exists ';
+		case 'PropositionExists':
+			return 'Error: Proposition already exists, ';
+		case 'RelationExists':
+			return 'Error: Relation already exists, ';
+		case 'NetworkError':
+			var httpError = error.a;
+			return 'Error: Network issue - ' + $author$project$Error$httpErrorToString(httpError);
+		default:
+			var msg = error.a;
+			return 'Error: ' + msg;
+	}
+};
 var $author$project$Main$viewError = function (maybeError) {
 	if (maybeError.$ === 'Just') {
 		var errorMsg = maybeError.a;
@@ -7236,12 +7360,22 @@ var $author$project$Main$viewError = function (maybeError) {
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(errorMsg)
+					$elm$html$Html$text(
+					$author$project$Error$errorToString(errorMsg))
 				]));
 	} else {
 		return $elm$html$Html$text('');
 	}
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Main$AddProposition = function (a) {
 	return {$: 'AddProposition', a: a};
 };
@@ -7412,7 +7546,20 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$Attributes$class('container')
 							]),
-						A2($elm$core$List$indexedMap, $author$project$Main$agentInputView, model.agents)),
+						A2(
+							$elm$core$List$indexedMap,
+							F2(
+								function (index, agent) {
+									return A3(
+										$author$project$Main$agentInputView,
+										index,
+										agent,
+										A2(
+											$elm$core$Maybe$withDefault,
+											'',
+											A2($elm_community$list_extra$List$Extra$getAt, index, model.currentRelationInputs)));
+								}),
+							model.agents)),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
