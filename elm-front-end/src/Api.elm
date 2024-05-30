@@ -1,7 +1,7 @@
 module Api exposing (..)
 
 import Http
-import Model exposing (Model, newModelEncoder)
+import Model exposing (Model, newModelEncoder, newModelPropositionEncoder)
 
 
 fetchReadMe : (Result Http.Error String -> msg) -> Cmd msg
@@ -22,18 +22,36 @@ fetchElmStuff onResponse =
 
 postModel : Model -> (Result Http.Error String -> msg) -> Cmd msg
 postModel model onResponse =
-    Http.post
-        {
-        body = Http.jsonBody (newModelEncoder model)
-        , url = "http://127.0.0.1:3000/model"
-        , expect = Http.expectString onResponse
-        }
+  Http.request
+    { method = "POST"
+    , headers = []
+    , url = "http://127.0.0.1:3000/model"
+    , body = Http.jsonBody (newModelEncoder model)
+    , expect = Http.expectString onResponse
+    , timeout = Nothing
+    , tracker = Nothing
+    }
+    -- Http.post
+    --     {
+    --     body = Http.jsonBody (newModelEncoder model)
+    --     , url = "http://127.0.0.1:3000/model"
+    --     , expect = Http.expectString onResponse
+    --     }
 
 evaluateModel : Model -> (Result Http.Error String -> msg) -> Cmd msg
 evaluateModel model onResponse =
-    Http.post
-        {
-        body = Http.jsonBody (newModelEncoder model)
-        , url = "http://127.0.0.1:3000/evaluate"
-        , expect = Http.expectString onResponse
-        }
+  Http.request
+    { method = "POST"
+    , headers = []
+    , url = "https://example.com/evaluate"
+    , body = Http.jsonBody (newModelPropositionEncoder model)
+    , expect = Http.expectString onResponse
+    , timeout = Nothing
+    , tracker = Nothing
+    }
+    -- Http.post
+    --     {
+    --     body = Http.jsonBody (newModelEncoder model)
+    --     , url = "http://127.0.0.1:3000/evaluate"
+    --     , expect = Http.expectString onResponse
+    --     }

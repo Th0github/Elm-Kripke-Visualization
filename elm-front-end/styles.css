@@ -66,6 +66,7 @@ body, input, button, div {
 
 .button-red {
   background-color: peru;
+  height: 24px;
   color: white;
   border: none;
   padding: 5px 10px;
@@ -77,6 +78,7 @@ body, input, button, div {
 
 .button-blue {
   background-color: teal;
+  height: 24px;
   color: white;
   border: none;
   padding: 5px 10px;
