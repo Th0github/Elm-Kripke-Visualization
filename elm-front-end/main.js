@@ -7043,6 +7043,130 @@ var $author$project$Main$agentInputView = F2(
 				]));
 	});
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Main$highlightJson = function (jsonString) {
+	var highlight = function (c) {
+		var charStr = $elm$core$String$fromChar(c);
+		switch (c.valueOf()) {
+			case '{':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '}':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '[':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case ']':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '\"':
+				return A2(
+					$elm$core$String$contains,
+					': ',
+					A2($elm$core$String$dropLeft, 1, jsonString)) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('key')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('string')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case ',':
+				return $elm$html$Html$text(charStr);
+			case ':':
+				return $elm$html$Html$text(charStr);
+			case ' ':
+				return $elm$html$Html$text(charStr);
+			case '-':
+				return $elm$html$Html$text(charStr);
+			case '.':
+				return $elm$html$Html$text(charStr);
+			default:
+				return $elm$core$Char$isDigit(c) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('number')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : (A2($elm$core$String$contains, 'truefalse', charStr) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('boolean')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : $elm$html$Html$text(charStr));
+		}
+	};
+	return A2(
+		$elm$html$Html$pre,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('syntax-highlighted-json')
+			]),
+		A2(
+			$elm$core$List$map,
+			highlight,
+			$elm$core$String$toList(jsonString)));
+};
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
 var $elm_explorations$markdown$Markdown$defaultOptions = {
@@ -7306,7 +7430,7 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$text('Current JSON Output:'),
 								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								$elm$html$Html$text(model.jsonOutput)
+								$author$project$Main$highlightJson(model.jsonOutput)
 							]))
 					]))
 			]));
