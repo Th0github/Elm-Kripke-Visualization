@@ -5445,6 +5445,8 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
+var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -6925,16 +6927,16 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 251, column: 13},
-						end: {line: 251, column: 23}
+						start: {line: 257, column: 13},
+						end: {line: 257, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
-				var _v7 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
-				var updatedModel = _v7.a;
-				var cmd1 = _v7.b;
-				var _v8 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
-				var finalModel = _v8.a;
-				var cmd2 = _v8.b;
+				var _v12 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v12.a;
+				var cmd1 = _v12.b;
+				var _v13 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v13.a;
+				var cmd2 = _v13.b;
 				return _Utils_Tuple2(
 					finalModel,
 					$elm$core$Platform$Cmd$batch(
@@ -7328,7 +7330,47 @@ var $author$project$Main$view = function (model) {
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Kripke Model Creator')
+								$elm$html$Html$text('Kripke Model Creator'),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('button'),
+										$elm$html$Html$Events$onMouseEnter($author$project$Main$ToggleChoiceBox),
+										$elm$html$Html$Events$onClick($author$project$Main$ToggleAndFetch)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Toggle Help')
+									])),
+								model.showPopup ? A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Help Page')
+											])),
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchElmStuffReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Elm Stuff')
+											]))
+									])) : $elm$html$Html$text('')
 							])),
 						$author$project$Main$viewError(model.error),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),

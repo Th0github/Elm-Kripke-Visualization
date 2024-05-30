@@ -289,6 +289,11 @@ view model =
                   else
                     text "" 
                 ]
+            , viewError model.error
+            , br [] []
+            , text "Worlds"
+            , br [] []
+            , br [] []
             , input [ class "input", placeholder "Enter world (integer)", onInput UpdateWorldInput, value model.worldInput ] []
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
