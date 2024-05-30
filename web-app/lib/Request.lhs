@@ -3,10 +3,9 @@
 -- \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Request
-  ( handleRequest,
-  )
-where
+
+module Request where
+
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import DB
@@ -26,8 +25,6 @@ import Web.Scotty
     scotty,
     text,
   )
-
--- import Network.HTTP.Types
 
 handleRequest :: IO ()
 handleRequest = scotty 3000 $ do
@@ -49,7 +46,11 @@ handleRequest = scotty 3000 $ do
     model <- jsonData :: ActionM Model -- Decode body of the POST request as an Model object
     liftIO $ saveModel model
     json model
-  notFound $ do -- handler for when there is no matched route
+  post "/evaluate" $ do
+    formula <- jsonData :: ActionM Form
+    let trueWorlds = formula `trueIn` muddyStart
+    json trueWorlds
+  notFound $ do
     text "there is no such route."
   where
     corsMiddleware = cors (const $ Just resourcePolicy)
