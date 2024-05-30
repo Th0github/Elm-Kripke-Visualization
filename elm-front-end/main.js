@@ -5474,11 +5474,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-<<<<<<< HEAD
-		{agentInput: '', agents: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
-=======
-		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
->>>>>>> 98d3f89b7f30d3408e642ef42a9a0d96a6f5ea74
+		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -7100,13 +7096,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-<<<<<<< HEAD
-						start: {line: 282, column: 13},
-						end: {line: 282, column: 23}
-=======
-						start: {line: 322, column: 13},
-						end: {line: 322, column: 23}
->>>>>>> 98d3f89b7f30d3408e642ef42a9a0d96a6f5ea74
+						start: {line: 324, column: 13},
+						end: {line: 324, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
 				var _v18 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
