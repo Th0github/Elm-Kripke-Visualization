@@ -5445,6 +5445,8 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
+var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -6872,20 +6874,30 @@ var $author$project$Main$update = F2(
 						$author$project$Main$postModel(model)));
 			case 'PostedKripkeModel':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
+			case 'GotKripkeModel':
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 226, column: 13},
-						end: {line: 226, column: 23}
+						start: {line: 227, column: 13},
+						end: {line: 227, column: 23}
 					})('TODO');
+			default:
+				var _v7 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v7.a;
+				var cmd1 = _v7.b;
+				var _v8 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v8.a;
+				var cmd2 = _v8.b;
+				return _Utils_Tuple2(
+					finalModel,
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[cmd1, cmd2])));
 		}
 	});
 var $author$project$Main$AddAgent = {$: 'AddAgent'};
 var $author$project$Main$AddWorld = {$: 'AddWorld'};
-var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
 var $author$project$Main$PostKripkeModel = {$: 'PostKripkeModel'};
-var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
 var $author$project$Main$UpdateAgentInput = function (a) {
 	return {$: 'UpdateAgentInput', a: a};
 };

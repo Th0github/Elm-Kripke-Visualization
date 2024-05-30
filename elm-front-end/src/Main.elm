@@ -55,6 +55,7 @@ type Msg
     | RemoveWorld Int
     | PostedKripkeModel (Result Http.Error String)
     | GotKripkeModel (Result Http.Error String)
+    | ToggleAndFetch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -224,6 +225,15 @@ update msg model =
 
         GotKripkeModel _ ->
             Debug.todo "TODO"
+
+        ToggleAndFetch ->
+            let
+                ( updatedModel, cmd1 ) = update ToggleReadMe model
+                ( finalModel, cmd2) = update FetchReadMe updatedModel
+            in
+            ( finalModel, Cmd.batch [ cmd1, cmd2 ] )
+        
+
 
 
 
