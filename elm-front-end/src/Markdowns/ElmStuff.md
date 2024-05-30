@@ -2,8 +2,7 @@
 To have reached this page, you have hovered over the toggle button, pressed a button request to a Markdown document, which Elm then converted to HTML to be displayed.
 
 ## How This Happens in Elm
-A break down how this happened in Elm syntax is given below:
-1. Hover Over Toggle Button:
+1. Hover over toggle button:
 *Model and Initial State:*
 ```{elm}
 init =({-- Kripke model
@@ -53,6 +52,7 @@ update msg model =
             ( { model | showPopup = not model.showPopup }, Cmd.none )
 ```
 *Fetching the markdown documents:*
+
 ```{elm}
 fetchedReadMe : Cmd Msg
 fetchedReadMe =
@@ -68,7 +68,8 @@ fetchedElmStuff =
         , expect = Http.expectString RecieveReadMe
         }
 ```
-3. **View** function. Converts Markdown to HTML and render the view::
+3. **View** function. Converts Markdown to HTML and render the view:
+
 ```{elm}
 view : Model -> Html Msg
 view model =
@@ -94,8 +95,8 @@ view model =
                     ]
 ```
 
-```
-5. **Main** function:
+4. **Main**:
+
 ```{elm}
 main : Program () Model Msg
 main =
@@ -107,7 +108,8 @@ main =
         }
 ```
 
-6. Stylesheet (style.css):
+5. Stylesheet (style.css):
+
 ```{css}
 .button:hover {
   background-color: #367c39; /* Darker shade on hover */
