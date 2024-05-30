@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import Html exposing (Html, br, button, div, h1, input, text, span, pre)
 import Html.Attributes exposing (class, placeholder, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onMouseEnter)
 import Html.Lazy exposing (lazy)
 import Http
 import Json.Decode exposing (decodeValue)
@@ -50,10 +50,13 @@ type Msg
     | RecieveReadMe (Result Http.Error String)
     | ToggleReadMe
     | FetchReadMe
+    | FetchElmStuffReadMe
     | PostKripkeModel
     | RemoveWorld Int
     | PostedKripkeModel (Result Http.Error String)
     | GotKripkeModel (Result Http.Error String)
+    | ToggleAndFetch
+    | ToggleChoiceBox
 
 
 -- The update function takes a message and a model and returns a new model and a command.
@@ -227,6 +230,9 @@ update msg model =
         FetchReadMe ->
             ( model, fetchedReadMe )
 
+        FetchElmStuffReadMe ->
+            ( model, fetchedElmStuff )
+
         RecieveReadMe (Ok content) ->
             ( { model | readMeContent = content }, Cmd.none )
 
@@ -250,6 +256,17 @@ update msg model =
         GotKripkeModel _ ->
             Debug.todo "TODO"
 
+        ToggleAndFetch ->
+            let
+                ( updatedModel, cmd1 ) = update ToggleReadMe model
+                ( finalModel, cmd2) = update FetchReadMe updatedModel
+            in
+            ( finalModel, Cmd.batch [ cmd1, cmd2 ] )
+        
+        ToggleChoiceBox ->
+            ( { model | showPopup = not model.showPopup }, Cmd.none )
+
+
 
 
 -- VIEW
@@ -260,7 +277,18 @@ view : Model -> Html Msg
 view model =
     div [ class "container-flex" ]
         [ div [ class "left-column" ]
-            [ div [ class "container" ] [ text "Kripke Model Creator" ]
+            [ div [ class "head-container" ] 
+                [ 
+                text "Kripke Model Creator" 
+                , button [ class "button", onMouseEnter ToggleChoiceBox, onClick ToggleAndFetch ] [ text "Toggle Help" ]
+                , if model.showPopup then
+                    div []
+                        [ button [ class "button", onClick FetchReadMe ] [ text "Help Page" ]
+                        , button [ class "button", onClick FetchElmStuffReadMe ] [ text "Elm Stuff" ]
+                        ]
+                  else
+                    text "" 
+                ]
             , viewError model.error
             , br [] []
             , text "Worlds"
@@ -277,8 +305,6 @@ view model =
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
-            , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
-            , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
             , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
             ]
 
@@ -286,7 +312,7 @@ view model =
         , div [ class "right-column" ]
             [ if model.showReadMe then
                 div []
-                    [ h1 [] [ text "REPORT" ]
+                    [ h1 [] [ text "Documentation" ]
                     , div [] [ lazy (Markdown.toHtml []) model.readMeContent ]
                     ]
 
@@ -358,7 +384,14 @@ viewError maybeError =
 fetchedReadMe : Cmd Msg
 fetchedReadMe =
     Http.get
-        { url = "https://raw.githubusercontent.com/elm/browser/master/README.md"
+        { url = "https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/HELP.md"
+        , expect = Http.expectString RecieveReadMe
+        }
+
+fetchedElmStuff : Cmd Msg
+fetchedElmStuff =
+    Http.get
+        { url = "https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/ElmStuff.md"
         , expect = Http.expectString RecieveReadMe
         }
 

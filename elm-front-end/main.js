@@ -5445,6 +5445,8 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
+var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -6257,10 +6259,15 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
+var $author$project$Main$fetchedElmStuff = $elm$http$Http$get(
+	{
+		expect: $elm$http$Http$expectString($author$project$Main$RecieveReadMe),
+		url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/ElmStuff.md'
+	});
 var $author$project$Main$fetchedReadMe = $elm$http$Http$get(
 	{
 		expect: $elm$http$Http$expectString($author$project$Main$RecieveReadMe),
-		url: 'https://raw.githubusercontent.com/elm/browser/master/README.md'
+		url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/HELP.md'
 	});
 var $elm$core$List$drop = F2(
 	function (n, list) {
@@ -6884,6 +6891,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'FetchReadMe':
 				return _Utils_Tuple2(model, $author$project$Main$fetchedReadMe);
+			case 'FetchElmStuffReadMe':
+				return _Utils_Tuple2(model, $author$project$Main$fetchedElmStuff);
 			case 'RecieveReadMe':
 				if (msg.a.$ === 'Ok') {
 					var content = msg.a.a;
@@ -6914,20 +6923,39 @@ var $author$project$Main$update = F2(
 						$author$project$Main$postModel(model)));
 			case 'PostedKripkeModel':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
+			case 'GotKripkeModel':
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 251, column: 13},
-						end: {line: 251, column: 23}
+						start: {line: 257, column: 13},
+						end: {line: 257, column: 23}
 					})('TODO');
+			case 'ToggleAndFetch':
+				var _v12 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v12.a;
+				var cmd1 = _v12.b;
+				var _v13 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v13.a;
+				var cmd2 = _v13.b;
+				return _Utils_Tuple2(
+					finalModel,
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[cmd1, cmd2])));
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showPopup: !model.showPopup}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$AddAgent = {$: 'AddAgent'};
 var $author$project$Main$AddWorld = {$: 'AddWorld'};
-var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
+var $author$project$Main$FetchElmStuffReadMe = {$: 'FetchElmStuffReadMe'};
 var $author$project$Main$PostKripkeModel = {$: 'PostKripkeModel'};
-var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
+var $author$project$Main$ToggleAndFetch = {$: 'ToggleAndFetch'};
+var $author$project$Main$ToggleChoiceBox = {$: 'ToggleChoiceBox'};
 var $author$project$Main$UpdateAgentInput = function (a) {
 	return {$: 'UpdateAgentInput', a: a};
 };
@@ -7169,6 +7197,12 @@ var $author$project$Main$highlightJson = function (jsonString) {
 };
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
+var $elm$html$Html$Events$onMouseEnter = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseenter',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm_explorations$markdown$Markdown$defaultOptions = {
 	defaultHighlighting: $elm$core$Maybe$Nothing,
 	githubFlavored: $elm$core$Maybe$Just(
@@ -7292,11 +7326,51 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('container')
+								$elm$html$Html$Attributes$class('head-container')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Kripke Model Creator')
+								$elm$html$Html$text('Kripke Model Creator'),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('button'),
+										$elm$html$Html$Events$onMouseEnter($author$project$Main$ToggleChoiceBox),
+										$elm$html$Html$Events$onClick($author$project$Main$ToggleAndFetch)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Toggle Help')
+									])),
+								model.showPopup ? A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Help Page')
+											])),
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchElmStuffReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Elm Stuff')
+											]))
+									])) : $elm$html$Html$text('')
 							])),
 						$author$project$Main$viewError(model.error),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
@@ -7372,28 +7446,6 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$ToggleReadMe)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Toggle README/JSON')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Fetch README')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
 								$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
 							]),
 						_List_fromArray(
@@ -7419,7 +7471,7 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('REPORT')
+										$elm$html$Html$text('Documentation')
 									])),
 								A2(
 								$elm$html$Html$div,
