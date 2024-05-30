@@ -34,32 +34,34 @@ data Model = Mo
   }
   deriving (Eq, Ord, Show)
 
-(!) :: Eq a => [(a,b)] -> a -> b
+(!) :: (Eq a) => [(a, b)] -> a -> b
 (!) v x = fromJust (lookup x v)
 
-(?) :: Eq a => [[a]] -> a -> [a]
+(?) :: (Eq a) => [[a]] -> a -> [a]
 (?) lls x = head (filter (x `elem`) lls)
 
 isTrue :: (Model, World) -> Form -> Bool
 isTrue _ Top = True
-isTrue (m,w) (P p) = p `elem ` (val m ! w)
-isTrue (m,w) (Neg f) = not (isTrue (m,w) f)
-isTrue (m,w) (Con f g) = isTrue (m,w) f && isTrue (m,w) g
-isTrue (m,w) (K i f) = and [ isTrue (m,w') f | w' <- (rel m ! i) ? w ]
-isTrue (m,w) (Ann f g) = isTrue (m,w) f <= isTrue (announce m f, w) g
+isTrue (m, w) (P p) = p `elem` (val m ! w)
+isTrue (m, w) (Neg f) = not (isTrue (m, w) f)
+isTrue (m, w) (Con f g) = isTrue (m, w) f && isTrue (m, w) g
+isTrue (m, w) (K i f) = and [isTrue (m, w') f | w' <- (rel m ! i) ? w]
+isTrue (m, w) (Ann f g) = isTrue (m, w) f <= isTrue (announce m f, w) g
 
 (|=) :: (Model, World) -> Form -> Bool
 (|=) = isTrue
 
 announce :: Model -> Form -> Model
-announce m@(Mo ws r v) f = Mo newWorlds newRel newVal where
-    newWorlds = [ w' | w' <- ws , isTrue (m,w') f ]
-    newRel = [ (i, relFilter er) | (i,er) <- r ] where
-        relFilter = filter (not . null) . map (filter (`elem ` newWorlds))  
-    newVal = filter ((`elem ` newWorlds) . fst) v
+announce m@(Mo ws r v) f = Mo newWorlds newRel newVal
+  where
+    newWorlds = [w' | w' <- ws, isTrue (m, w') f]
+    newRel = [(i, relFilter er) | (i, er) <- r]
+      where
+        relFilter = filter (not . null) . map (filter (`elem` newWorlds))
+    newVal = filter ((`elem` newWorlds) . fst) v
 
 (-->) :: Form -> Form -> Form
-(-->) f = Con (Neg f) 
+(-->) f = Con (Neg f)
 
 conSet :: [Form] -> Form
 conSet = foldr1 Con
@@ -143,21 +145,26 @@ instance FromJSON Form where
       _ -> fail "Unknown form type"
 
 instance FromJSON Model where
-  parseJSON (Object v) =
-    Mo
-      <$> v .: "worlds"
-      <*> (v .: "relations" >>= mapM parseRel)
-      <*> (v .: "valuations" >>= mapM parseVal)
+  parseJSON =
+    withObject
+      "Object"
+      ( \o ->
+          do
+            _worlds <- o .: "worlds"
+            _relations <- o .: "relations" >>= mapM parseRel
+            _valutations <- o .: "valuations" >>= mapM parseVal
+            return (Mo _worlds _relations _valutations)
+      )
     where
-      parseRel (agent, worlds') = (,) agent <$> parseJSON (Array worlds')
-      parseVal (world, props) = (,) world <$> parseJSON props
-  parseJSON _ = fail "Could not parse Model from JSON"
+      parseRel = withObject "Relations" (\o' -> (,) <$> (o' .: "agentName") <*> (o' .: "worldRelations"))
+      parseVal = withObject "Valuations" (\o' -> (,) <$> (o' .: "world") <*> (o' .: "propositions"))
 
 instance ToJSON Model where
   toJSON (Mo worlds' rel' val') =
     object
       [ "worlds" .= worlds',
-        "relations" .= map (\(a, ws) -> object ["agentName" .= a, "relations" .= ws]) rel',
+        "relations" .= map (\(a, ws) -> object ["agentName" .= a, "worldRelations" .= ws]) rel',
         "valuations" .= map (\(w, ps) -> object ["world" .= w, "propositions" .= ps]) val'
       ]
-\end{code}
+
+-- % \end{code}

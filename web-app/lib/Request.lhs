@@ -1,12 +1,11 @@
-
-\section{The most basic library}\label{sec:Request}
-
-This section describes request handling
-
-\begin{code}
+-- \section{The most basic library}\label{sec:Request}
+-- This section describes request handling
+-- \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
+
 module Request where
+
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import DB
@@ -41,10 +40,11 @@ handleRequest = scotty 3000 $ do
     text "This was a PUT request!"
   -- get model (json)
   get "/model" $ do
-    json muddyStart -- Call Model constructor and encode the result as JSON
+    model <- liftIO getModel
+    json model -- Call Model constructor and encode the result as JSON
   post "/model" $ do
     model <- jsonData :: ActionM Model -- Decode body of the POST request as an Model object
-    liftIO $ save model
+    liftIO $ saveModel model
     json model
   post "/evaluate" $ do
     formula <- jsonData :: ActionM Form
@@ -60,9 +60,7 @@ handleRequest = scotty 3000 $ do
             { corsMethods = "DELETE" : "PUT" : simpleMethods, -- simpleMethods are GET,HEAD,POST
               corsRequestHeaders = "Content-Type" : simpleHeaders
             }
+            
+-- \end{code}
 
--- handler for when there is no matched route
--- (this should be the last handler because it matches all routes)
-\end{code}
-
-That's it, for now.
+-- That's it, for now.
