@@ -5474,7 +5474,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{agentInput: '', agents: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
+		{agentInput: '', agents: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -6973,8 +6973,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 280, column: 13},
-						end: {line: 280, column: 23}
+						start: {line: 282, column: 13},
+						end: {line: 282, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
 				var _v12 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
@@ -6988,11 +6988,25 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[cmd1, cmd2])));
-			default:
+			case 'ToggleChoiceBox':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{showPopup: !model.showPopup}),
+					$elm$core$Platform$Cmd$none);
+			case 'VisualizeKripkeModel':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							jsonOutput: $author$project$Main$toJson(model)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showGraph: !model.showGraph}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -7002,12 +7016,14 @@ var $author$project$Main$FetchElmStuffReadMe = {$: 'FetchElmStuffReadMe'};
 var $author$project$Main$PostKripkeModel = {$: 'PostKripkeModel'};
 var $author$project$Main$ToggleAndFetch = {$: 'ToggleAndFetch'};
 var $author$project$Main$ToggleChoiceBox = {$: 'ToggleChoiceBox'};
+var $author$project$Main$ToggleShowGraph = {$: 'ToggleShowGraph'};
 var $author$project$Main$UpdateAgentInput = function (a) {
 	return {$: 'UpdateAgentInput', a: a};
 };
 var $author$project$Main$UpdateWorldInput = function (a) {
 	return {$: 'UpdateWorldInput', a: a};
 };
+var $author$project$Main$VisualizeKripkeModel = {$: 'VisualizeKripkeModel'};
 var $author$project$Main$AddRelation = function (a) {
 	return {$: 'AddRelation', a: a};
 };
@@ -10214,6 +10230,18 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Post Model')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('button'),
+								$elm$html$Html$Events$onClick($author$project$Main$VisualizeKripkeModel),
+								$elm$html$Html$Events$onClick($author$project$Main$ToggleShowGraph)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Visualize Model')
 							]))
 					])),
 				A2(
@@ -10246,6 +10274,16 @@ var $author$project$Main$view = function (model) {
 										$elm_explorations$markdown$Markdown$toHtml(_List_Nil),
 										model.readMeContent)
 									]))
+							])) : (model.showGraph ? A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('container')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Current Graph Output:'),
+								$author$project$GraphKripke$getSvg
 							])) : A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -10255,10 +10293,8 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Current JSON Output:'),
-								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								$author$project$Main$highlightJson(model.jsonOutput),
-								$author$project$GraphKripke$getSvg
-							]))
+								$author$project$Main$highlightJson(model.jsonOutput)
+							])))
 					]))
 			]));
 };

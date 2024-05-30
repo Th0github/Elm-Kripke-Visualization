@@ -20,6 +20,7 @@ type alias Model =
     , showPopup : Bool -- Show the popup
     , showReadMe : Bool -- Show the Readme content
     , error : Maybe String -- Error message
+    , showGraph : Bool -- Show the graph
     }
 
 

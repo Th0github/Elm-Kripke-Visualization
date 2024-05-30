@@ -32,6 +32,7 @@ init _ =
       , readMeContent = ""
       , showPopup = False
       , showReadMe = False
+      , showGraph = False
       , error = Nothing
       }
     , Cmd.none
@@ -62,7 +63,8 @@ type Msg
     | GotKripkeModel (Result Http.Error String)
     | ToggleAndFetch
     | ToggleChoiceBox
-
+    | VisualizeKripkeModel
+    | ToggleShowGraph
 
 
 -- The update function takes a message and a model and returns a new model and a command.
@@ -292,6 +294,11 @@ update msg model =
         ToggleChoiceBox ->
             ( { model | showPopup = not model.showPopup }, Cmd.none )
 
+        VisualizeKripkeModel ->
+            ( { model | jsonOutput = toJson model }, Cmd.none )
+        
+        ToggleShowGraph ->
+            ( { model | showGraph = not model.showGraph }, Cmd.none )
 
 
 -- VIEW
@@ -331,6 +338,7 @@ view model =
             , br [] []
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
             , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
+            , button [ class "button", onClick VisualizeKripkeModel, onClick ToggleShowGraph] [ text "Visualize Model" ]
             ]
 
         -- , div [class "container"] [ text "Readme:", br [] [], text model.readMeContent ] -- have html render on writeside
@@ -342,8 +350,12 @@ view model =
                     ]
 
               else
+                if model.showGraph then
+                    div [ class "container" ]
+                        [ text "Current Graph Output:", getSvg]
+                else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], highlightJson model.jsonOutput, getSvg ]
+                    [ text "Current JSON Output:", highlightJson model.jsonOutput ]
             ]
         ]
 
