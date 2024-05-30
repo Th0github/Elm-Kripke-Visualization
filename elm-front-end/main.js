@@ -6918,8 +6918,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 252, column: 13},
-						end: {line: 252, column: 23}
+						start: {line: 251, column: 13},
+						end: {line: 251, column: 23}
 					})('TODO');
 		}
 	});
@@ -7170,6 +7170,7 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$text('Kripke Model Creator')
 							])),
+						$author$project$Main$viewError(model.error),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
@@ -7224,7 +7225,6 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$text('Add Agent')
 							])),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						$author$project$Main$viewError(model.error),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(

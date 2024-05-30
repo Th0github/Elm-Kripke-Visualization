@@ -182,7 +182,6 @@ update msg model =
         --Updates the current relation input for the given agent index
         UpdateRelationInput index input ->
             let
-
                 inputAsList =
                     String.words input |> List.map (\n -> String.toInt n |> Maybe.withDefault 0)
 
@@ -262,6 +261,7 @@ view model =
     div [ class "container-flex" ]
         [ div [ class "left-column" ]
             [ div [ class "container" ] [ text "Kripke Model Creator" ]
+            , viewError model.error
             , input [ class "input", placeholder "Enter world (integer)", onInput UpdateWorldInput, value model.worldInput ] []
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
@@ -269,7 +269,7 @@ view model =
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
-            , viewError model.error
+
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
             , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
             , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
