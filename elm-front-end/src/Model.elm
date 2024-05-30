@@ -40,8 +40,8 @@ newModelEncoder model =
 newModelPropositionEncoder : Model -> Value
 newModelPropositionEncoder model =
     object
-        [
-         ("form", encodePropositionInput model.valuationPropositionInput)
+
+        [ ("form", object [ ("p", encodePropositionInput model.valuationPropositionInput) ])
          , ("model", object [
             ( "worlds", list (\( w, _ ) -> int w) model.worlds )
             , ( "valuations", list (\( w, ps ) -> object [ ( "world", int w ), ( "propositions", list int ps ) ]) model.worlds )
@@ -56,4 +56,4 @@ encodePropositionInput : String -> Value
 encodePropositionInput input =
     case String.toInt(input) of
         Just num -> int num
-        Nothing -> int 0  -- Default to 0 or any other default you deem appropriate
+        Nothing -> int 0  --should never happen

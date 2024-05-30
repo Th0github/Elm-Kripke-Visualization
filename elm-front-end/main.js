@@ -6157,6 +6157,7 @@ var $elm$http$Http$jsonBody = function (value) {
 		'application/json',
 		A2($elm$json$Json$Encode$encode, 0, value));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $author$project$Model$encodePropositionInput = function (input) {
 	var _v0 = $elm$core$String$toInt(input);
@@ -6196,7 +6197,13 @@ var $author$project$Model$newModelPropositionEncoder = function (model) {
 			[
 				_Utils_Tuple2(
 				'form',
-				$author$project$Model$encodePropositionInput(model.valuationPropositionInput)),
+				$elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'p',
+							$author$project$Model$encodePropositionInput(model.valuationPropositionInput))
+						]))),
 				_Utils_Tuple2(
 				'model',
 				$elm$json$Json$Encode$object(
@@ -6423,18 +6430,20 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
+var $elm$http$Http$post = function (r) {
+	return $elm$http$Http$request(
+		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
+};
 var $author$project$Api$evaluateModel = F2(
 	function (model, onResponse) {
-		return $elm$http$Http$request(
+		var jsonValue = $author$project$Model$newModelPropositionEncoder(model);
+		var jsonBody = A2($elm$json$Json$Encode$encode, 0, jsonValue);
+		var _v0 = A2($elm$core$Debug$log, 'JSON Body', jsonBody);
+		return $elm$http$Http$post(
 			{
-				body: $elm$http$Http$jsonBody(
-					$author$project$Model$newModelPropositionEncoder(model)),
+				body: $elm$http$Http$jsonBody(jsonValue),
 				expect: $elm$http$Http$expectString(onResponse),
-				headers: _List_Nil,
-				method: 'POST',
-				timeout: $elm$core$Maybe$Nothing,
-				tracker: $elm$core$Maybe$Nothing,
-				url: 'https://example.com/evaluate'
+				url: 'http://127.0.0.1:3000/evaluate'
 			});
 	});
 var $elm$http$Http$emptyBody = _Http_emptyBody;
@@ -6491,7 +6500,6 @@ var $elm_community$list_extra$List$Extra$getAt = F2(
 		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, idx, xs));
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -7217,7 +7225,7 @@ var $author$project$Main$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{successMsg: 'Successfully validated model'}),
+							{successMsg: 'Successfully validated model,\n Worlds where this is true ' + response}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					var httpError = msg.a.a;
@@ -7267,8 +7275,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 385, column: 13},
-						end: {line: 385, column: 23}
+						start: {line: 384, column: 13},
+						end: {line: 384, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
 				var _v23 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);

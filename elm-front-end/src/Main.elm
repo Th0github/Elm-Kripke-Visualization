@@ -21,7 +21,6 @@ import KripkeModel exposing (KripkeModel)
 -- MODEL
 -- The model is initialized
 
-
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { worlds = []
@@ -344,7 +343,7 @@ update msg model =
                 _ =
                     Debug.log "Validated" response
             in
-            ( { model | successMsg = "Successfully validated model"}, Cmd.none )
+            ( { model | successMsg = "Successfully validated model,\n Worlds where this is true: " ++ response}, Cmd.none )
 
         EvaluatedKripkeModel (Err httpError) ->
             let
