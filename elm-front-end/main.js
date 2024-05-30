@@ -6446,14 +6446,14 @@ var $author$project$Api$fetchElmStuff = function (onResponse) {
 	return $elm$http$Http$get(
 		{
 			expect: $elm$http$Http$expectString(onResponse),
-			url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/ElmStuff.md'
+			url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/main/elm-front-end/src/Markdowns/ElmStuff.md'
 		});
 };
 var $author$project$Api$fetchReadMe = function (onResponse) {
 	return $elm$http$Http$get(
 		{
 			expect: $elm$http$Http$expectString(onResponse),
-			url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/HELP.md'
+			url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/main/elm-front-end/src/Markdowns/HELP.md'
 		});
 };
 var $elm$core$List$drop = F2(

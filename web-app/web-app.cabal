@@ -15,6 +15,8 @@ build-type:     Simple
 library
   exposed-modules:
       DB
+      EvaluationRequest
+      Form
       Model
       Request
   other-modules:
