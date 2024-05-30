@@ -7022,7 +7022,7 @@ var $author$project$Main$agentInputView = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('input'),
-							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds)'),
+							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds, space separated integers)'),
 							$elm$html$Html$Events$onInput(
 							$author$project$Main$UpdateRelationInput(index))
 						]),
@@ -7218,19 +7218,28 @@ var $author$project$Main$worldInputView = F3(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(
-					'World ' + ($elm$core$String$fromInt(world) + ':   ')),
 					A2(
-					$elm$html$Html$button,
+					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('button-secondary'),
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$RemoveWorld(index))
+							$elm$html$Html$Attributes$class('world-header')
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('Remove')
+							$elm$html$Html$text(
+							'World ' + ($elm$core$String$fromInt(world) + ':   ')),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button-secondary'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$RemoveWorld(index))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('X')
+								]))
 						])),
 					A2(
 					$elm$html$Html$input,
@@ -7259,11 +7268,6 @@ var $author$project$Main$worldInputView = F3(
 						[
 							$elm$html$Html$text('Add Proposition')
 						])),
-					$elm$html$Html$text(
-					' Propositions: ' + A2(
-						$elm$core$String$join,
-						', ',
-						A2($elm$core$List$map, $elm$core$String$fromInt, propositions))),
 					A2($elm$html$Html$br, _List_Nil, _List_Nil)
 				]));
 	});
@@ -7295,6 +7299,10 @@ var $author$project$Main$view = function (model) {
 								$elm$html$Html$text('Kripke Model Creator')
 							])),
 						$author$project$Main$viewError(model.error),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						$elm$html$Html$text('Worlds'),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
@@ -7327,6 +7335,9 @@ var $author$project$Main$view = function (model) {
 							$elm$core$List$indexedMap,
 							$author$project$Main$worldInputView(model),
 							model.worlds)),
+						$elm$html$Html$text('Agents'),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(

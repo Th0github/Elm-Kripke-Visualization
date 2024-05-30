@@ -110,3 +110,18 @@ body, input, button, div {
 .syntax-highlighted-json .brace {
   color: #000000;
 }
+
+
+
+.world-input-container {
+  margin-bottom: 20px;
+}
+
+.world-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
