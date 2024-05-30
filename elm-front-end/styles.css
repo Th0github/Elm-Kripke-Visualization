@@ -12,6 +12,12 @@ body, input, button, div {
   margin-bottom: 10px; /* Adds spacing between sections */
 }
 
+.error {
+  color: red;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
 .container-flex {
   display: flex;
   flex-direction: row;

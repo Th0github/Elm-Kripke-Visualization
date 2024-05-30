@@ -19,6 +19,7 @@ type alias Model =
     , readMeContent : String -- Readme content
     , showPopup : Bool -- Show the popup
     , showReadMe : Bool -- Show the Readme content
+    , error : Maybe String -- Error message
     }
 
 

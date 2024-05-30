@@ -15,8 +15,7 @@ import Model exposing (Model, newModelEncoder)
 
 
 -- MODEL
-
-
+-- The model is initialized
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { worlds = []
@@ -30,6 +29,7 @@ init _ =
       , readMeContent = ""
       , showPopup = False
       , showReadMe = False
+      , error = Nothing
       }
     , Cmd.none
     )
@@ -37,8 +37,7 @@ init _ =
 
 
 -- UPDATE
-
-
+-- Here, are the actions that can be performed on the model, which updates the UI
 type Msg
     = UpdateWorldInput String
     | AddWorld
@@ -57,28 +56,32 @@ type Msg
     | GotKripkeModel (Result Http.Error String)
 
 
+-- The update function takes a message and a model and returns a new model and a command.
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateWorldInput input ->
             ( { model | worldInput = input }, Cmd.none )
-
+        -- Adds the current world input to the worlds list
         AddWorld ->
             let
-                world =
-                    String.toInt model.worldInput |> Maybe.withDefault 0
+                maybeWorld =
+                    String.toInt model.worldInput
+                (updatedWorlds, errorMsg) =
+                    case maybeWorld of
+                        Just world ->
+                            let
+                                worldExists =
+                                    List.any (\(w, _) -> w == world) model.worlds
+                            in
+                            if worldExists then
+                                (model.worlds, Just "Error: World already exists")
+                            else
+                                (model.worlds ++ [ ( world, [] ) ], Nothing)
 
-                worldExists =
-                    List.any (\(w, _) -> w == world) model.worlds
+                        Nothing ->
+                            (model.worlds, Just "Error: Invalid input")
 
-                _ =
-                    Debug.log "World exists" worldExists
-
-                updatedWorlds =
-                    if worldExists then
-                        model.worlds
-                    else
-                        model.worlds ++ [ ( world, [] ) ]
 
             in
             ( { model
@@ -86,9 +89,11 @@ update msg model =
                 , worldInput = ""
                 , propositionInputs = model.propositionInputs ++ [ "" ]
                 , jsonOutput = toJson { model | worlds = updatedWorlds }
-              }
+                , error = errorMsg
+            }
             , Cmd.none
             )
+
         RemoveWorld index ->
             let
                 updatedWorlds = List.Extra.removeAt index model.worlds
@@ -124,18 +129,39 @@ update msg model =
         -- Adds the current proposition input to the propositions list for the given world index from the propositionInputs list
         AddProposition index ->
             let
-                proposition =
-                    String.toInt (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") |> Maybe.withDefault 0
+                maybeProposition =
+                    List.Extra.getAt index model.propositionInputs
+                        |> Maybe.andThen String.toInt
 
-                updatedWorlds =
-                    List.indexedMap
-                        (\i ( w, ps ) ->
-                            if i == index && not (List.any (\p -> p == proposition) ps) then
-                                ( w, ps ++ [ proposition ] )
+                (updatedWorlds, errorMsg) =
+                    case maybeProposition of
+                        Just proposition ->
+                            let
+                                propositionExists =
+                                    case List.Extra.getAt index model.worlds of
+                                        Just ( _, ps ) -> List.any (\p -> p == proposition) ps
+                                        Nothing -> False
+
+                                updates =
+                                    if propositionExists then
+                                        model.worlds
+                                    else
+                                        List.indexedMap
+                                            (\i ( w, ps ) ->
+                                                if i == index && not propositionExists then
+                                                    ( w, ps ++ [ proposition ] )
+                                                else
+                                                    ( w, ps )
+                                            )
+                                            model.worlds
+                            in
+                            if propositionExists then
+                                (updates, Just "Error: Proposition already exists")
                             else
-                                ( w, ps )
-                        )
-                        model.worlds
+                                (updates, Nothing)
+
+                        Nothing ->
+                            (model.worlds, Just "Error: Invalid input")
             in
             ( { model
                 | worlds = updatedWorlds
@@ -144,19 +170,18 @@ update msg model =
                         (\i p ->
                             if i == index then
                                 ""
-
                             else
                                 p
                         )
                         model.propositionInputs
                 , jsonOutput = toJson { model | worlds = updatedWorlds }
-              }
+                , error = errorMsg
+            }
             , Cmd.none
             )
         --Updates the current relation input for the given agent index
         UpdateRelationInput index input ->
             let
-
                 inputAsList =
                     String.words input |> List.map (\n -> String.toInt n |> Maybe.withDefault 0)
 
@@ -228,8 +253,7 @@ update msg model =
 
 
 -- VIEW
---<link rel="stylesheet" type="text/css" href="styles.css">
---Need to add this to the index.html file to link the css file
+-- The view functions defines the layout of the UI and how the model is displayed
 
 
 view : Model -> Html Msg
@@ -237,6 +261,7 @@ view model =
     div [ class "container-flex" ]
         [ div [ class "left-column" ]
             [ div [ class "container" ] [ text "Kripke Model Creator" ]
+            , viewError model.error
             , input [ class "input", placeholder "Enter world (integer)", onInput UpdateWorldInput, value model.worldInput ] []
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
@@ -244,6 +269,7 @@ view model =
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
+
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
             , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
             , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
@@ -309,6 +335,15 @@ toJson model =
         ]
         |> encode 4
 
+
+viewError : Maybe String -> Html msg
+viewError maybeError =
+    case maybeError of
+        Just errorMsg ->
+            div [ class "error" ] [ text errorMsg ]
+
+        Nothing ->
+            text ""
 
 
 -- Fetch Readme content
