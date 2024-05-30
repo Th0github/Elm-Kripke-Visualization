@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, br, button, div, h1, input, text)
+import Html exposing (Html, br, button, div, h1, input, text, span, pre)
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput, onMouseEnter)
 import Html.Lazy exposing (lazy)
@@ -15,8 +15,7 @@ import Model exposing (Model, newModelEncoder)
 
 
 -- MODEL
-
-
+-- The model is initialized
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { worlds = []
@@ -30,6 +29,7 @@ init _ =
       , readMeContent = ""
       , showPopup = False
       , showReadMe = False
+      , error = Nothing
       }
     , Cmd.none
     )
@@ -37,8 +37,7 @@ init _ =
 
 
 -- UPDATE
-
-
+-- Here, are the actions that can be performed on the model, which updates the UI
 type Msg
     = UpdateWorldInput String
     | AddWorld
@@ -60,28 +59,32 @@ type Msg
     | ToggleChoiceBox
 
 
+-- The update function takes a message and a model and returns a new model and a command.
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateWorldInput input ->
             ( { model | worldInput = input }, Cmd.none )
-
+        -- Adds the current world input to the worlds list
         AddWorld ->
             let
-                world =
-                    String.toInt model.worldInput |> Maybe.withDefault 0
+                maybeWorld =
+                    String.toInt model.worldInput
+                (updatedWorlds, errorMsg) =
+                    case maybeWorld of
+                        Just world ->
+                            let
+                                worldExists =
+                                    List.any (\(w, _) -> w == world) model.worlds
+                            in
+                            if worldExists then
+                                (model.worlds, Just "Error: World already exists")
+                            else
+                                (model.worlds ++ [ ( world, [] ) ], Nothing)
 
-                worldExists =
-                    List.any (\(w, _) -> w == world) model.worlds
+                        Nothing ->
+                            (model.worlds, Just "Error: Invalid input")
 
-                _ =
-                    Debug.log "World exists" worldExists
-
-                updatedWorlds =
-                    if worldExists then
-                        model.worlds
-                    else
-                        model.worlds ++ [ ( world, [] ) ]
 
             in
             ( { model
@@ -89,9 +92,11 @@ update msg model =
                 , worldInput = ""
                 , propositionInputs = model.propositionInputs ++ [ "" ]
                 , jsonOutput = toJson { model | worlds = updatedWorlds }
-              }
+                , error = errorMsg
+            }
             , Cmd.none
             )
+
         RemoveWorld index ->
             let
                 updatedWorlds = List.Extra.removeAt index model.worlds
@@ -127,18 +132,39 @@ update msg model =
         -- Adds the current proposition input to the propositions list for the given world index from the propositionInputs list
         AddProposition index ->
             let
-                proposition =
-                    String.toInt (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") |> Maybe.withDefault 0
+                maybeProposition =
+                    List.Extra.getAt index model.propositionInputs
+                        |> Maybe.andThen String.toInt
 
-                updatedWorlds =
-                    List.indexedMap
-                        (\i ( w, ps ) ->
-                            if i == index && not (List.any (\p -> p == proposition) ps) then
-                                ( w, ps ++ [ proposition ] )
+                (updatedWorlds, errorMsg) =
+                    case maybeProposition of
+                        Just proposition ->
+                            let
+                                propositionExists =
+                                    case List.Extra.getAt index model.worlds of
+                                        Just ( _, ps ) -> List.any (\p -> p == proposition) ps
+                                        Nothing -> False
+
+                                updates =
+                                    if propositionExists then
+                                        model.worlds
+                                    else
+                                        List.indexedMap
+                                            (\i ( w, ps ) ->
+                                                if i == index && not propositionExists then
+                                                    ( w, ps ++ [ proposition ] )
+                                                else
+                                                    ( w, ps )
+                                            )
+                                            model.worlds
+                            in
+                            if propositionExists then
+                                (updates, Just "Error: Proposition already exists")
                             else
-                                ( w, ps )
-                        )
-                        model.worlds
+                                (updates, Nothing)
+
+                        Nothing ->
+                            (model.worlds, Just "Error: Invalid input")
             in
             ( { model
                 | worlds = updatedWorlds
@@ -147,19 +173,18 @@ update msg model =
                         (\i p ->
                             if i == index then
                                 ""
-
                             else
                                 p
                         )
                         model.propositionInputs
                 , jsonOutput = toJson { model | worlds = updatedWorlds }
-              }
+                , error = errorMsg
+            }
             , Cmd.none
             )
         --Updates the current relation input for the given agent index
         UpdateRelationInput index input ->
             let
-
                 inputAsList =
                     String.words input |> List.map (\n -> String.toInt n |> Maybe.withDefault 0)
 
@@ -245,8 +270,7 @@ update msg model =
 
 
 -- VIEW
---<link rel="stylesheet" type="text/css" href="styles.css">
---Need to add this to the index.html file to link the css file
+-- The view functions defines the layout of the UI and how the model is displayed
 
 
 view : Model -> Html Msg
@@ -269,6 +293,9 @@ view model =
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
             , div [ class "container" ] (List.indexedMap (worldInputView model) model.worlds)
+            , text "Agents"
+            , br [] []
+            , br [] []
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
@@ -286,7 +313,7 @@ view model =
 
               else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], text model.jsonOutput ]
+                    [ text "Current JSON Output:", br [] [],highlightJson model.jsonOutput ]
             ]
         ]
 
@@ -294,10 +321,10 @@ view model =
 worldInputView : Model -> Int -> ( Int, List Int ) -> Html Msg
 worldInputView model index ( world, propositions ) =
     div [ class "container" ]
-        [ text <| "World " ++ String.fromInt world ++ ":   " , button [ class "button-secondary", onClick (RemoveWorld index) ] [ text "Remove" ]
+        [
+            div [class "world-header"] [text <| "World " ++ String.fromInt world ++ ":   " , button [class "button-secondary", onClick (RemoveWorld index) ] [ text "X" ]]
         , input [ class "input", placeholder "Add proposition (integer)", onInput (UpdatePropositionInput index), value (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") ] []
         , button [ class "button", onClick (AddProposition index) ] [ text "Add Proposition" ]
-        , text <| " Propositions: " ++ String.join ", " (List.map String.fromInt propositions)
         , br [] []
         ]
 
@@ -309,7 +336,7 @@ agentInputView index agent =
         [ text <| "Agent " ++ agent ++ ": "
         , input
             [ class "input"
-            , placeholder "Add relation (list of worlds)"
+            , placeholder "Add relation (list of worlds, space separated integers)"
             , onInput (UpdateRelationInput index)
 
             -- , value (List.Extra.getAt index model.re)
@@ -335,6 +362,15 @@ toJson model =
         ]
         |> encode 4
 
+
+viewError : Maybe String -> Html msg
+viewError maybeError =
+    case maybeError of
+        Just errorMsg ->
+            div [ class "error" ] [ text errorMsg ]
+
+        Nothing ->
+            text ""
 
 
 -- Fetch Readme content
@@ -368,9 +404,42 @@ postModel model =
         }
 
 
+highlightJson : String -> Html msg
+highlightJson jsonString =
+    let
+        highlight : Char -> Html msg
+        highlight c =
+            let
+                charStr = String.fromChar c
+            in
+            case c of
+                '{' -> span [ class "brace" ] [ text charStr ]
+                '}' -> span [ class "brace" ] [ text charStr ]
+                '[' -> span [ class "brace" ] [ text charStr ]
+                ']' -> span [ class "brace" ] [ text charStr ]
+                '"' ->
+                    if String.contains ": " (String.dropLeft 1 jsonString) then
+                        span [ class "key" ] [ text charStr ]
+                    else
+                        span [ class "string" ] [ text charStr ]
+                ',' -> text charStr
+                ':' -> text charStr
+                ' ' -> text charStr
+                '-' -> text charStr
+                '.' -> text charStr
+                _ ->
+                    if Char.isDigit c then
+                        span [ class "number" ] [ text charStr ]
+                    else if String.contains "truefalse" charStr then
+                        span [ class "boolean" ] [ text charStr ]
+                    else
+                        text charStr
+    in
+    pre [ class "syntax-highlighted-json" ]
+        (List.map highlight (String.toList jsonString))
+
 
 -- SUBSCRIPTIONS
-
 
 subscriptions : Model -> Sub Msg
 subscriptions model =

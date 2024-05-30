@@ -5437,7 +5437,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{agentInput: '', agents: _List_Nil, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
+		{agentInput: '', agents: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5445,8 +5445,15 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
-var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -6642,28 +6649,40 @@ var $author$project$Main$update = F2(
 						{worldInput: input}),
 					$elm$core$Platform$Cmd$none);
 			case 'AddWorld':
-				var world = A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					$elm$core$String$toInt(model.worldInput));
-				var worldExists = A2(
-					$elm$core$List$any,
-					function (_v2) {
-						var w = _v2.a;
-						return _Utils_eq(w, world);
-					},
-					model.worlds);
-				var updatedWorlds = worldExists ? model.worlds : _Utils_ap(
-					model.worlds,
-					_List_fromArray(
-						[
-							_Utils_Tuple2(world, _List_Nil)
-						]));
-				var _v1 = A2($elm$core$Debug$log, 'World exists', worldExists);
+				var maybeWorld = $elm$core$String$toInt(model.worldInput);
+				var _v1 = function () {
+					if (maybeWorld.$ === 'Just') {
+						var world = maybeWorld.a;
+						var worldExists = A2(
+							$elm$core$List$any,
+							function (_v3) {
+								var w = _v3.a;
+								return _Utils_eq(w, world);
+							},
+							model.worlds);
+						return worldExists ? _Utils_Tuple2(
+							model.worlds,
+							$elm$core$Maybe$Just('Error: World already exists')) : _Utils_Tuple2(
+							_Utils_ap(
+								model.worlds,
+								_List_fromArray(
+									[
+										_Utils_Tuple2(world, _List_Nil)
+									])),
+							$elm$core$Maybe$Nothing);
+					} else {
+						return _Utils_Tuple2(
+							model.worlds,
+							$elm$core$Maybe$Just('Error: Invalid input'));
+					}
+				}();
+				var updatedWorlds = _v1.a;
+				var errorMsg = _v1.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
+							error: errorMsg,
 							jsonOutput: $author$project$Main$toJson(
 								_Utils_update(
 									model,
@@ -6734,7 +6753,7 @@ var $author$project$Main$update = F2(
 				var updatedPropositions = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v3) {
+					function (_v4) {
 						return input;
 					},
 					model.propositionInputs);
@@ -6745,37 +6764,58 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'AddProposition':
 				var index = msg.a;
-				var proposition = A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					$elm$core$String$toInt(
-						A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2($elm_community$list_extra$List$Extra$getAt, index, model.propositionInputs))));
-				var updatedWorlds = A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (i, _v4) {
-							var w = _v4.a;
-							var ps = _v4.b;
-							return (_Utils_eq(i, index) && (!A2(
-								$elm$core$List$any,
-								function (p) {
-									return _Utils_eq(p, proposition);
-								},
-								ps))) ? _Utils_Tuple2(
-								w,
-								_Utils_ap(
-									ps,
-									_List_fromArray(
-										[proposition]))) : _Utils_Tuple2(w, ps);
-						}),
-					model.worlds);
+				var maybeProposition = A2(
+					$elm$core$Maybe$andThen,
+					$elm$core$String$toInt,
+					A2($elm_community$list_extra$List$Extra$getAt, index, model.propositionInputs));
+				var _v5 = function () {
+					if (maybeProposition.$ === 'Just') {
+						var proposition = maybeProposition.a;
+						var propositionExists = function () {
+							var _v8 = A2($elm_community$list_extra$List$Extra$getAt, index, model.worlds);
+							if (_v8.$ === 'Just') {
+								var _v9 = _v8.a;
+								var ps = _v9.b;
+								return A2(
+									$elm$core$List$any,
+									function (p) {
+										return _Utils_eq(p, proposition);
+									},
+									ps);
+							} else {
+								return false;
+							}
+						}();
+						var updates = propositionExists ? model.worlds : A2(
+							$elm$core$List$indexedMap,
+							F2(
+								function (i, _v7) {
+									var w = _v7.a;
+									var ps = _v7.b;
+									return (_Utils_eq(i, index) && (!propositionExists)) ? _Utils_Tuple2(
+										w,
+										_Utils_ap(
+											ps,
+											_List_fromArray(
+												[proposition]))) : _Utils_Tuple2(w, ps);
+								}),
+							model.worlds);
+						return propositionExists ? _Utils_Tuple2(
+							updates,
+							$elm$core$Maybe$Just('Error: Proposition already exists')) : _Utils_Tuple2(updates, $elm$core$Maybe$Nothing);
+					} else {
+						return _Utils_Tuple2(
+							model.worlds,
+							$elm$core$Maybe$Just('Error: Invalid input'));
+					}
+				}();
+				var updatedWorlds = _v5.a;
+				var errorMsg = _v5.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
+							error: errorMsg,
 							jsonOutput: $author$project$Main$toJson(
 								_Utils_update(
 									model,
@@ -6805,7 +6845,7 @@ var $author$project$Main$update = F2(
 				var updatedRelationInputs = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v5) {
+					function (_v10) {
 						return inputAsList;
 					},
 					model.relationInputs);
@@ -6818,9 +6858,9 @@ var $author$project$Main$update = F2(
 				var agentIndex = msg.a;
 				var maybeCurrentRelations = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relationInputs);
 				var currentRelations = A2($elm$core$Maybe$withDefault, _List_Nil, maybeCurrentRelations);
-				var updateRelations = function (_v6) {
-					var name = _v6.a;
-					var existingRelations = _v6.b;
+				var updateRelations = function (_v11) {
+					var name = _v11.a;
+					var existingRelations = _v11.b;
 					return _Utils_Tuple2(
 						name,
 						_Utils_ap(
@@ -6885,8 +6925,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 232, column: 13},
-						end: {line: 232, column: 23}
+						start: {line: 251, column: 13},
+						end: {line: 251, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
 				var _v7 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
@@ -7008,7 +7048,7 @@ var $author$project$Main$agentInputView = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('input'),
-							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds)'),
+							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds, space separated integers)'),
 							$elm$html$Html$Events$onInput(
 							$author$project$Main$UpdateRelationInput(index))
 						]),
@@ -7029,6 +7069,130 @@ var $author$project$Main$agentInputView = F2(
 				]));
 	});
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Main$highlightJson = function (jsonString) {
+	var highlight = function (c) {
+		var charStr = $elm$core$String$fromChar(c);
+		switch (c.valueOf()) {
+			case '{':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '}':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '[':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case ']':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '\"':
+				return A2(
+					$elm$core$String$contains,
+					': ',
+					A2($elm$core$String$dropLeft, 1, jsonString)) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('key')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('string')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case ',':
+				return $elm$html$Html$text(charStr);
+			case ':':
+				return $elm$html$Html$text(charStr);
+			case ' ':
+				return $elm$html$Html$text(charStr);
+			case '-':
+				return $elm$html$Html$text(charStr);
+			case '.':
+				return $elm$html$Html$text(charStr);
+			default:
+				return $elm$core$Char$isDigit(c) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('number')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : (A2($elm$core$String$contains, 'truefalse', charStr) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('boolean')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : $elm$html$Html$text(charStr));
+		}
+	};
+	return A2(
+		$elm$html$Html$pre,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('syntax-highlighted-json')
+			]),
+		A2(
+			$elm$core$List$map,
+			highlight,
+			$elm$core$String$toList(jsonString)));
+};
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
 var $elm$html$Html$Events$onMouseEnter = function (msg) {
@@ -7047,6 +7211,23 @@ var $elm_explorations$markdown$Markdown$defaultOptions = {
 var $elm_explorations$markdown$Markdown$toHtmlWith = _Markdown_toHtml;
 var $elm_explorations$markdown$Markdown$toHtml = $elm_explorations$markdown$Markdown$toHtmlWith($elm_explorations$markdown$Markdown$defaultOptions);
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Main$viewError = function (maybeError) {
+	if (maybeError.$ === 'Just') {
+		var errorMsg = maybeError.a;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('error')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(errorMsg)
+				]));
+	} else {
+		return $elm$html$Html$text('');
+	}
+};
 var $author$project$Main$AddProposition = function (a) {
 	return {$: 'AddProposition', a: a};
 };
@@ -7069,19 +7250,28 @@ var $author$project$Main$worldInputView = F3(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(
-					'World ' + ($elm$core$String$fromInt(world) + ':   ')),
 					A2(
-					$elm$html$Html$button,
+					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('button-secondary'),
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$RemoveWorld(index))
+							$elm$html$Html$Attributes$class('world-header')
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('Remove')
+							$elm$html$Html$text(
+							'World ' + ($elm$core$String$fromInt(world) + ':   ')),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button-secondary'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$RemoveWorld(index))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('X')
+								]))
 						])),
 					A2(
 					$elm$html$Html$input,
@@ -7110,11 +7300,6 @@ var $author$project$Main$worldInputView = F3(
 						[
 							$elm$html$Html$text('Add Proposition')
 						])),
-					$elm$html$Html$text(
-					' Propositions: ' + A2(
-						$elm$core$String$join,
-						', ',
-						A2($elm$core$List$map, $elm$core$String$fromInt, propositions))),
 					A2($elm$html$Html$br, _List_Nil, _List_Nil)
 				]));
 	});
@@ -7143,48 +7328,13 @@ var $author$project$Main$view = function (model) {
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Kripke Model Creator'),
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('button'),
-										$elm$html$Html$Events$onMouseEnter($author$project$Main$ToggleChoiceBox),
-										$elm$html$Html$Events$onClick($author$project$Main$ToggleAndFetch)
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Toggle Help')
-									])),
-								model.showPopup ? A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('button'),
-												$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Help Page')
-											])),
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('button'),
-												$elm$html$Html$Events$onClick($author$project$Main$FetchElmStuffReadMe)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Elm Stuff')
-											]))
-									])) : $elm$html$Html$text('')
+								$elm$html$Html$text('Kripke Model Creator')
 							])),
+						$author$project$Main$viewError(model.error),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						$elm$html$Html$text('Worlds'),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
@@ -7217,6 +7367,9 @@ var $author$project$Main$view = function (model) {
 							$elm$core$List$indexedMap,
 							$author$project$Main$worldInputView(model),
 							model.worlds)),
+						$elm$html$Html$text('Agents'),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
@@ -7298,7 +7451,7 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$text('Current JSON Output:'),
 								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								$elm$html$Html$text(model.jsonOutput)
+								$author$project$Main$highlightJson(model.jsonOutput)
 							]))
 					]))
 			]));

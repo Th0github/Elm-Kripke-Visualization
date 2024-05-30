@@ -12,6 +12,12 @@ body, input, button, div {
   margin-bottom: 10px; /* Adds spacing between sections */
 }
 
+.error {
+  color: red;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
 .container-flex {
   display: flex;
   flex-direction: row;
@@ -71,9 +77,51 @@ body, input, button, div {
   overflow: auto;
 }
 
-.head-container {
-  display: flex;
-  gap: 10px;
+/* JSON Viewer styles */
+.syntax-highlighted-json {
+  font-family: monospace;
+  white-space: pre;
+  background-color: #f8f8f8;
   padding: 10px;
-  border-bottom: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: auto;
 }
+
+.syntax-highlighted-json .key {
+  color: #922B21;
+}
+
+.syntax-highlighted-json .string {
+  color: #28B463;
+}
+
+.syntax-highlighted-json .number {
+  color: #1F618D;
+}
+
+.syntax-highlighted-json .boolean {
+  color: #AF7AC5;
+}
+
+.syntax-highlighted-json .null {
+  color: #7D3C98;
+}
+
+.syntax-highlighted-json .brace {
+  color: #000000;
+}
+
+
+
+.world-input-container {
+  margin-bottom: 20px;
+}
+
+.world-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
