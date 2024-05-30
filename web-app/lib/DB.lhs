@@ -1,13 +1,16 @@
-\section{Database}\label{sec:Database}
-This section describes the database implementation
+-- \section{Database}\label{sec:Database}
+-- This section describes the database implementation
 
-\begin{code}
-module DB (save) where
+-- \begin{code}
+module DB (saveModel, getModel) where
 
 import Data.Aeson
 import Model
 
-save :: Model -> IO ()
-save = encodeFile "test.txt"
+saveModel :: Model -> IO ()
+saveModel = encodeFile "test.txt"
 
-\end{code}
+getModel :: IO (Maybe Model)
+getModel = decodeFileStrict "test.txt"
+
+-- \end{code}

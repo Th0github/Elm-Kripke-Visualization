@@ -1,27 +1,27 @@
+-- \section{Wrapping it up in an exectuable}\label{sec:Main}
 
-\section{Wrapping it up in an exectuable}\label{sec:Main}
+-- We will now use the library form Section \ref{sec:Request} in a program.
 
-We will now use the library form Section \ref{sec:Request} in a program.
-
-\begin{code}
+-- \begin{code}
 module Main where
 
 import Request
 
 main :: IO ()
 main = handleRequest
-\end{code}
 
-We can run this program with the commands:
+-- \end{code}
 
-\begin{verbatim}
-stack build
-stack exec myprogram
-\end{verbatim}
+-- We can run this program with the commands:
 
-The output of the program is something like this:
+-- \begin{verbatim}
+-- stack build
+-- stack exec myprogram
+-- \end{verbatim}
 
-\begin{verbatim}
-Setting phasers to stun... (port 3000) (ctrl-c to quit)
+-- The output of the program is something like this:
 
-\end{verbatim}
+-- \begin{verbatim}
+-- Setting phasers to stun... (port 3000) (ctrl-c to quit)
+
+-- \end{verbatim}

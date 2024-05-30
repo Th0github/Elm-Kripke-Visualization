@@ -125,3 +125,9 @@ body, input, button, div {
   align-items: center;
 }
 
+.head-container {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}

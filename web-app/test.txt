@@ -1,1 +1,1 @@
-{"relations":[],"valuations":[],"worlds":[]}
+{"relations":[{"agentName":"","worldRelations":[]},{"agentName":"","worldRelations":[]},{"agentName":"","worldRelations":[]},{"agentName":"","worldRelations":[]}],"valuations":[],"worlds":[]}
