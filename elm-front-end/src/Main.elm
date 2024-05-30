@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, br, button, div, h1, input, span, text, pre)
+import Html exposing (Html, br, button, div, h1, input, text, span, pre)
 import Html.Attributes exposing (class, placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy)
@@ -262,14 +262,20 @@ view model =
         [ div [ class "left-column" ]
             [ div [ class "container" ] [ text "Kripke Model Creator" ]
             , viewError model.error
+            , br [] []
+            , text "Worlds"
+            , br [] []
+            , br [] []
             , input [ class "input", placeholder "Enter world (integer)", onInput UpdateWorldInput, value model.worldInput ] []
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
             , div [ class "container" ] (List.indexedMap (worldInputView model) model.worlds)
+            , text "Agents"
+            , br [] []
+            , br [] []
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
-
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
             , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
             , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
@@ -294,10 +300,10 @@ view model =
 worldInputView : Model -> Int -> ( Int, List Int ) -> Html Msg
 worldInputView model index ( world, propositions ) =
     div [ class "container" ]
-        [ text <| "World " ++ String.fromInt world ++ ":   " , button [ class "button-secondary", onClick (RemoveWorld index) ] [ text "Remove" ]
+        [
+            div [class "world-header"] [text <| "World " ++ String.fromInt world ++ ":   " , button [class "button-secondary", onClick (RemoveWorld index) ] [ text "X" ]]
         , input [ class "input", placeholder "Add proposition (integer)", onInput (UpdatePropositionInput index), value (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") ] []
         , button [ class "button", onClick (AddProposition index) ] [ text "Add Proposition" ]
-        , text <| " Propositions: " ++ String.join ", " (List.map String.fromInt propositions)
         , br [] []
         ]
 
@@ -309,7 +315,7 @@ agentInputView index agent =
         [ text <| "Agent " ++ agent ++ ": "
         , input
             [ class "input"
-            , placeholder "Add relation (list of worlds)"
+            , placeholder "Add relation (list of worlds, space separated integers)"
             , onInput (UpdateRelationInput index)
 
             -- , value (List.Extra.getAt index model.re)
