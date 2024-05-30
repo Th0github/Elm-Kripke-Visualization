@@ -11,15 +11,5 @@
 	  node: document.getElementById('app')
 	});
 	</script>
-	<script type="text/javascript">
-    var storageKey = "token";
-    var app = Elm.Main.fullscreen();
-    app.ports.save.subscribe(function(value) {
-      localStorage.setItem(storageKey, value);
-    });
-    app.ports.doload.subscribe(function() {
-      app.ports.load.send(localStorage.getItem(storageKey));
-    });
-</script>
   </body>
 </html>

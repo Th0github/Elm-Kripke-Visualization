@@ -1,7 +1,8 @@
 module Api exposing (..)
 
 import Http
-import Model exposing (Model, newModelEncoder)
+import Model exposing (Model, newModelEncoder, newModelPropositionEncoder)
+import Json.Encode exposing (Value, encode)
 
 
 fetchReadMe : (Result Http.Error String -> msg) -> Cmd msg
@@ -22,18 +23,34 @@ fetchElmStuff onResponse =
 
 postModel : Model -> (Result Http.Error String -> msg) -> Cmd msg
 postModel model onResponse =
-    Http.post
-        {
-        body = Http.jsonBody (newModelEncoder model)
-        , url = "http://127.0.0.1:3000/model"
-        , expect = Http.expectString onResponse
-        }
+  Http.request
+    { method = "POST"
+    , headers = []
+    , url = "http://127.0.0.1:3000/model"
+    , body = Http.jsonBody (newModelEncoder model)
+    , expect = Http.expectString onResponse
+    , timeout = Nothing
+    , tracker = Nothing
+    }
+    -- Http.post
+    --     {
+    --     body = Http.jsonBody (newModelEncoder model)
+    --     , url = "http://127.0.0.1:3000/model"
+    --     , expect = Http.expectString onResponse
+    --     }
 
 evaluateModel : Model -> (Result Http.Error String -> msg) -> Cmd msg
 evaluateModel model onResponse =
+    let
+        -- Encode the model to JSON
+        jsonValue = newModelPropositionEncoder model
+        jsonBody = encode 0 jsonValue  -- Converts JSON Value to a string
+
+        -- Log the JSON body
+        _ = Debug.log "JSON Body" jsonBody
+    in
     Http.post
-        {
-        body = Http.jsonBody (newModelEncoder model)
+        { body = Http.jsonBody jsonValue  -- Use the original Json.Encode.Value
         , url = "http://127.0.0.1:3000/evaluate"
         , expect = Http.expectString onResponse
         }

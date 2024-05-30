@@ -21,7 +21,6 @@ import KripkeModel exposing (KripkeModel)
 -- MODEL
 -- The model is initialized
 
-
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { worlds = []
@@ -32,6 +31,7 @@ init _ =
       , agentInput = ""
       , propositionInputs = []
       , readMeContent = ""
+      , valuationPropositionInput = ""
       , showPopup = False
       , showReadMe = False
       , showGraph = False
@@ -73,6 +73,7 @@ type Msg
     | EvaluatedKripkeModel (Result Http.Error String)
     | UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
+    | UpdateValuationPropositionInput String
 
 
 
@@ -332,18 +333,17 @@ update msg model =
             ( { model | error = Just Error.PostError }, Cmd.none )
 
         EvaluateKripkeModel ->
-            let
-                _ =
-                    Debug.log "Validate"
-            in
-            ( model, evaluateModel model EvaluatedKripkeModel)
+            if model.valuationPropositionInput == "" then
+                ({ model | error = Just Error.InvalidInput }, Cmd.none)
+            else
+                ( model, evaluateModel model EvaluatedKripkeModel)
 
         EvaluatedKripkeModel (Ok response) ->
             let
                 _ =
                     Debug.log "Validated" response
             in
-            ( { model | successMsg = "Successfully validated model"}, Cmd.none )
+            ( { model | successMsg = "Successfully validated model,\n Worlds where this is true: " ++ response}, Cmd.none )
 
         EvaluatedKripkeModel (Err httpError) ->
             let
@@ -351,6 +351,17 @@ update msg model =
                     Debug.log "Validated Error"
             in
             ( { model | error = Just Error.PostError }, Cmd.none )
+        UpdateValuationPropositionInput input ->
+            let
+                _ =
+                    Debug.log "Valuation Proposition Input"
+            in
+                if String.toInt input /= Nothing then
+                    ( { model | valuationPropositionInput = input, error = Nothing }, Cmd.none )
+                else if input == "" then
+                    ( { model | valuationPropositionInput = input, error = Nothing }, Cmd.none )
+                else
+                    ( { model | error = Just Error.InvalidInput }, Cmd.none )
         UrlRequested (Browser.Internal _) ->
             ( model, Cmd.none )
 
@@ -358,12 +369,10 @@ update msg model =
             ( model, Cmd.none )
 
         UrlRequested (Browser.External url) ->
-            ( model, Nav.load url )
+            ( model, Cmd.none )
 
         UrlChanged _ ->
             ( model, Cmd.none )
-
-
 
         -- let
         --     _ =
@@ -396,7 +405,6 @@ update msg model =
 
 -- VIEW
 -- The view functions defines the layout of the UI and how the model is displayed
-
 
 view : Model -> Html Msg
 view model =
@@ -433,7 +441,10 @@ view model =
             , div [ class "container" ] (List.indexedMap (\index agent -> agentInputView index agent (List.Extra.getAt index model.currentRelationInputs |> Maybe.withDefault "")) model.agents)
             , div [class "buttons"] [
              button [ type_ "button", class "button-red", onClick PostKripkeModel ] [ text "Post Model" ]
-            , button [type_ "button", class "button-purple", onClick EvaluateKripkeModel ] [ text "Evaluate Model" ]
+            , div [ ]
+            [ input [ class "input", placeholder "Enter proposition (integer)", onInput UpdateValuationPropositionInput, value model.valuationPropositionInput ] []
+            , button [ type_ "button", class "button-purple", onClick EvaluateKripkeModel ] [ text "Evaluate Model" ]
+            ]
             , button [ type_ "button",class "button-blue", onClick VisualizeKripkeModel, onClick ToggleShowGraph] [ text "Toggle json/graph" ]
             ]
             ]
@@ -625,7 +636,6 @@ subscriptions model = Sub.none
 
 
 -- PROGRAM
-
 
 main : Program () Model Msg
 main =

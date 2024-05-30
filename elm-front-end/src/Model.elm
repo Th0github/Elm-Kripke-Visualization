@@ -1,4 +1,4 @@
-module Model exposing (Model, World, newModelEncoder)
+module Model exposing (Model, World, newModelEncoder, newModelPropositionEncoder, encodePropositionInput)
 
 import Json.Encode exposing (Value, int, list, object, string)
 import Error exposing (KMError)
@@ -23,6 +23,7 @@ type alias Model =
     , error : Maybe KMError -- Error message
     , showGraph : Bool -- Show the graph
     , successMsg : String -- Success message
+    , valuationPropositionInput : String -- Proposition input
     }
 
 
@@ -35,3 +36,24 @@ newModelEncoder model =
         -- , ("agents", list string model.agents)
         , ( "relations", list (\( a, rs ) -> object [ ( "agentName", string a ), ( "worldRelations", list (list int) rs ) ]) model.relations )
         ]
+
+newModelPropositionEncoder : Model -> Value
+newModelPropositionEncoder model =
+    object
+
+        [ ("form", object [ ("p", encodePropositionInput model.valuationPropositionInput) ])
+         , ("model", object [
+            ( "worlds", list (\( w, _ ) -> int w) model.worlds )
+            , ( "valuations", list (\( w, ps ) -> object [ ( "world", int w ), ( "propositions", list int ps ) ]) model.worlds )
+            -- , ("agents", list string model.agents)
+            , ( "relations", list (\( a, rs ) -> object [ ( "agentName", string a ), ( "worldRelations", list (list int) rs ) ]) model.relations )
+            ])
+        ]
+
+
+
+encodePropositionInput : String -> Value
+encodePropositionInput input =
+    case String.toInt(input) of
+        Just num -> int num
+        Nothing -> int 0  --should never happen

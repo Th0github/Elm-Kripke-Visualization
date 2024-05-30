@@ -1,14 +1,14 @@
-\section{The most basic library}\label{sec:Request}
-This section describes request handling
-\begin{code}
+-- \section{The most basic library}\label{sec:Request}
+-- This section describes request handling
+-- \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
-
 
 module Request where
 
-
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import DB
+import EvaluationRequest
+import Form
 import Model
 import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsRequestHeaders), cors, simpleCorsResourcePolicy, simpleHeaders, simpleMethods)
 import Web.Scotty
@@ -22,6 +22,7 @@ import Web.Scotty
     notFound,
     post,
     put,
+    request,
     scotty,
     text,
   )
@@ -47,8 +48,8 @@ handleRequest = scotty 3000 $ do
     liftIO $ saveModel model
     json model
   post "/evaluate" $ do
-    formula <- jsonData :: ActionM Form
-    let trueWorlds = formula `trueIn` muddyStart
+    r <- jsonData :: ActionM EvaluationRequest
+    let trueWorlds = getFormFromRequest r `trueIn` getModelFromRequest r
     json trueWorlds
   notFound $ do
     text "there is no such route."
@@ -61,6 +62,6 @@ handleRequest = scotty 3000 $ do
               corsRequestHeaders = "Content-Type" : simpleHeaders
             }
 
-\end{code}
+-- \end{code}
 
 -- That's it, for now.

@@ -5474,7 +5474,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, successMsg: '', worldInput: '', worlds: _List_Nil},
+		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, successMsg: '', valuationPropositionInput: '', worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -6157,7 +6157,17 @@ var $elm$http$Http$jsonBody = function (value) {
 		'application/json',
 		A2($elm$json$Json$Encode$encode, 0, value));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$int = _Json_wrap;
+var $author$project$Model$encodePropositionInput = function (input) {
+	var _v0 = $elm$core$String$toInt(input);
+	if (_v0.$ === 'Just') {
+		var num = _v0.a;
+		return $elm$json$Json$Encode$int(num);
+	} else {
+		return $elm$json$Json$Encode$int(0);
+	}
+};
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -6181,60 +6191,75 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Model$newModelEncoder = function (model) {
+var $author$project$Model$newModelPropositionEncoder = function (model) {
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
-				'worlds',
-				A2(
-					$elm$json$Json$Encode$list,
-					function (_v0) {
-						var w = _v0.a;
-						return $elm$json$Json$Encode$int(w);
-					},
-					model.worlds)),
+				'form',
+				$elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'p',
+							$author$project$Model$encodePropositionInput(model.valuationPropositionInput))
+						]))),
 				_Utils_Tuple2(
-				'valuations',
-				A2(
-					$elm$json$Json$Encode$list,
-					function (_v1) {
-						var w = _v1.a;
-						var ps = _v1.b;
-						return $elm$json$Json$Encode$object(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'world',
-									$elm$json$Json$Encode$int(w)),
-									_Utils_Tuple2(
-									'propositions',
-									A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
-								]));
-					},
-					model.worlds)),
-				_Utils_Tuple2(
-				'relations',
-				A2(
-					$elm$json$Json$Encode$list,
-					function (_v2) {
-						var a = _v2.a;
-						var rs = _v2.b;
-						return $elm$json$Json$Encode$object(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'agentName',
-									$elm$json$Json$Encode$string(a)),
-									_Utils_Tuple2(
-									'worldRelations',
-									A2(
-										$elm$json$Json$Encode$list,
-										$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
-										rs))
-								]));
-					},
-					model.relations))
+				'model',
+				$elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'worlds',
+							A2(
+								$elm$json$Json$Encode$list,
+								function (_v0) {
+									var w = _v0.a;
+									return $elm$json$Json$Encode$int(w);
+								},
+								model.worlds)),
+							_Utils_Tuple2(
+							'valuations',
+							A2(
+								$elm$json$Json$Encode$list,
+								function (_v1) {
+									var w = _v1.a;
+									var ps = _v1.b;
+									return $elm$json$Json$Encode$object(
+										_List_fromArray(
+											[
+												_Utils_Tuple2(
+												'world',
+												$elm$json$Json$Encode$int(w)),
+												_Utils_Tuple2(
+												'propositions',
+												A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
+											]));
+								},
+								model.worlds)),
+							_Utils_Tuple2(
+							'relations',
+							A2(
+								$elm$json$Json$Encode$list,
+								function (_v2) {
+									var a = _v2.a;
+									var rs = _v2.b;
+									return $elm$json$Json$Encode$object(
+										_List_fromArray(
+											[
+												_Utils_Tuple2(
+												'agentName',
+												$elm$json$Json$Encode$string(a)),
+												_Utils_Tuple2(
+												'worldRelations',
+												A2(
+													$elm$json$Json$Encode$list,
+													$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
+													rs))
+											]));
+								},
+								model.relations))
+						])))
 			]));
 };
 var $elm$http$Http$Request = function (a) {
@@ -6411,10 +6436,12 @@ var $elm$http$Http$post = function (r) {
 };
 var $author$project$Api$evaluateModel = F2(
 	function (model, onResponse) {
+		var jsonValue = $author$project$Model$newModelPropositionEncoder(model);
+		var jsonBody = A2($elm$json$Json$Encode$encode, 0, jsonValue);
+		var _v0 = A2($elm$core$Debug$log, 'JSON Body', jsonBody);
 		return $elm$http$Http$post(
 			{
-				body: $elm$http$Http$jsonBody(
-					$author$project$Model$newModelEncoder(model)),
+				body: $elm$http$Http$jsonBody(jsonValue),
 				expect: $elm$http$Http$expectString(onResponse),
 				url: 'http://127.0.0.1:3000/evaluate'
 			});
@@ -6473,8 +6500,6 @@ var $elm_community$list_extra$List$Extra$getAt = F2(
 		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, idx, xs));
 	});
-var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -6484,6 +6509,7 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$String$words = _String_words;
 var $author$project$Main$parseInputToRelation = function (input) {
 	var isValidInteger = function (s) {
@@ -6499,13 +6525,73 @@ var $author$project$Main$parseInputToRelation = function (input) {
 	var allValid = A2($elm$core$List$all, isValidInteger, inputAsList);
 	return allValid ? $elm$core$Maybe$Just(parsedInputAsList) : $elm$core$Maybe$Nothing;
 };
+var $author$project$Model$newModelEncoder = function (model) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'worlds',
+				A2(
+					$elm$json$Json$Encode$list,
+					function (_v0) {
+						var w = _v0.a;
+						return $elm$json$Json$Encode$int(w);
+					},
+					model.worlds)),
+				_Utils_Tuple2(
+				'valuations',
+				A2(
+					$elm$json$Json$Encode$list,
+					function (_v1) {
+						var w = _v1.a;
+						var ps = _v1.b;
+						return $elm$json$Json$Encode$object(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'world',
+									$elm$json$Json$Encode$int(w)),
+									_Utils_Tuple2(
+									'propositions',
+									A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
+								]));
+					},
+					model.worlds)),
+				_Utils_Tuple2(
+				'relations',
+				A2(
+					$elm$json$Json$Encode$list,
+					function (_v2) {
+						var a = _v2.a;
+						var rs = _v2.b;
+						return $elm$json$Json$Encode$object(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'agentName',
+									$elm$json$Json$Encode$string(a)),
+									_Utils_Tuple2(
+									'worldRelations',
+									A2(
+										$elm$json$Json$Encode$list,
+										$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
+										rs))
+								]));
+					},
+					model.relations))
+			]));
+};
 var $author$project$Api$postModel = F2(
 	function (model, onResponse) {
-		return $elm$http$Http$post(
+		return $elm$http$Http$request(
 			{
 				body: $elm$http$Http$jsonBody(
 					$author$project$Model$newModelEncoder(model)),
 				expect: $elm$http$Http$expectString(onResponse),
+				headers: _List_Nil,
+				method: 'POST',
+				timeout: $elm$core$Maybe$Nothing,
+				tracker: $elm$core$Maybe$Nothing,
 				url: 'http://127.0.0.1:3000/model'
 			});
 	});
@@ -7123,22 +7209,27 @@ var $author$project$Main$update = F2(
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'EvaluateKripkeModel':
-				var _v20 = $elm$core$Debug$log('Validate');
-				return _Utils_Tuple2(
+				return (model.valuationPropositionInput === '') ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							error: $elm$core$Maybe$Just($author$project$Error$InvalidInput)
+						}),
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					model,
 					A2($author$project$Api$evaluateModel, model, $author$project$Main$EvaluatedKripkeModel));
 			case 'EvaluatedKripkeModel':
 				if (msg.a.$ === 'Ok') {
 					var response = msg.a.a;
-					var _v21 = A2($elm$core$Debug$log, 'Validated', response);
+					var _v20 = A2($elm$core$Debug$log, 'Validated', response);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{successMsg: 'Successfully validated model'}),
+							{successMsg: 'Successfully validated model,\n Worlds where this is true ' + response}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					var httpError = msg.a.a;
-					var _v22 = $elm$core$Debug$log('Validated Error');
+					var _v21 = $elm$core$Debug$log('Validated Error');
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7147,6 +7238,26 @@ var $author$project$Main$update = F2(
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
+			case 'UpdateValuationPropositionInput':
+				var input = msg.a;
+				var _v22 = $elm$core$Debug$log('Valuation Proposition Input');
+				return (!_Utils_eq(
+					$elm$core$String$toInt(input),
+					$elm$core$Maybe$Nothing)) ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{error: $elm$core$Maybe$Nothing, valuationPropositionInput: input}),
+					$elm$core$Platform$Cmd$none) : ((input === '') ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{error: $elm$core$Maybe$Nothing, valuationPropositionInput: input}),
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							error: $elm$core$Maybe$Just($author$project$Error$InvalidInput)
+						}),
+					$elm$core$Platform$Cmd$none));
 			case 'UrlRequested':
 				if (msg.a.$ === 'Internal') {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -7155,9 +7266,7 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 					} else {
 						var url = msg.a.a;
-						return _Utils_Tuple2(
-							model,
-							$elm$browser$Browser$Navigation$load(url));
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 					}
 				}
 			case 'UrlChanged':
@@ -7166,8 +7275,8 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 375, column: 13},
-						end: {line: 375, column: 23}
+						start: {line: 384, column: 13},
+						end: {line: 384, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
 				var _v23 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
@@ -7213,6 +7322,9 @@ var $author$project$Main$ToggleChoiceBox = {$: 'ToggleChoiceBox'};
 var $author$project$Main$ToggleShowGraph = {$: 'ToggleShowGraph'};
 var $author$project$Main$UpdateAgentInput = function (a) {
 	return {$: 'UpdateAgentInput', a: a};
+};
+var $author$project$Main$UpdateValuationPropositionInput = function (a) {
+	return {$: 'UpdateValuationPropositionInput', a: a};
 };
 var $author$project$Main$UpdateWorldInput = function (a) {
 	return {$: 'UpdateWorldInput', a: a};
@@ -9290,7 +9402,6 @@ var $elm_community$intdict$IntDict$inner = F3(
 			}
 		}
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Bitwise$complement = _Bitwise_complement;
 var $elm$core$Bitwise$or = _Bitwise_or;
 var $elm_community$intdict$IntDict$highestBitSet = function (n) {
@@ -10469,16 +10580,32 @@ var $author$project$Main$view = function (model) {
 										$elm$html$Html$text('Post Model')
 									])),
 								A2(
-								$elm$html$Html$button,
+								$elm$html$Html$div,
+								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$type_('button'),
-										$elm$html$Html$Attributes$class('button-purple'),
-										$elm$html$Html$Events$onClick($author$project$Main$EvaluateKripkeModel)
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Evaluate Model')
+										A2(
+										$elm$html$Html$input,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('input'),
+												$elm$html$Html$Attributes$placeholder('Enter proposition (integer)'),
+												$elm$html$Html$Events$onInput($author$project$Main$UpdateValuationPropositionInput),
+												$elm$html$Html$Attributes$value(model.valuationPropositionInput)
+											]),
+										_List_Nil),
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$type_('button'),
+												$elm$html$Html$Attributes$class('button-purple'),
+												$elm$html$Html$Events$onClick($author$project$Main$EvaluateKripkeModel)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Evaluate Model')
+											]))
 									])),
 								A2(
 								$elm$html$Html$button,
