@@ -7105,11 +7105,44 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('container')
+								$elm$html$Html$Attributes$class('head-container')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Kripke Model Creator')
+								$elm$html$Html$text('Kripke Model Creator'),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('button'),
+										$elm$html$Html$Events$onClick($author$project$Main$ToggleReadMe)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Toggle README/JSON')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('button'),
+										$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Fetch README')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('button'),
+										$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Post Model')
+									]))
 							])),
 						A2(
 						$elm$html$Html$input,
@@ -7171,40 +7204,7 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$Attributes$class('container')
 							]),
-						A2($elm$core$List$indexedMap, $author$project$Main$agentInputView, model.agents)),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$ToggleReadMe)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Toggle README/JSON')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Fetch README')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Post Model')
-							]))
+						A2($elm$core$List$indexedMap, $author$project$Main$agentInputView, model.agents))
 					])),
 				A2(
 				$elm$html$Html$div,

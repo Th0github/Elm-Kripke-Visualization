@@ -236,7 +236,13 @@ view : Model -> Html Msg
 view model =
     div [ class "container-flex" ]
         [ div [ class "left-column" ]
-            [ div [ class "container" ] [ text "Kripke Model Creator" ]
+            [ div [ class "head-container" ] 
+                [ 
+                text "Kripke Model Creator" 
+                , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
+                , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
+                , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
+                ]
             , input [ class "input", placeholder "Enter world (integer)", onInput UpdateWorldInput, value model.worldInput ] []
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
@@ -245,9 +251,6 @@ view model =
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
-            , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
-            , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
-            , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
             ]
 
         -- , div [class "container"] [ text "Readme:", br [] [], text model.readMeContent ] -- have html render on writeside
