@@ -12,6 +12,7 @@ type KMError
     | WorldNotExists
     | NetworkError Http.Error
     | OtherError String
+    | PostError
 
 errorToString : KMError -> String
 errorToString error =
@@ -40,7 +41,8 @@ errorToString error =
 
         NetworkError httpError ->
             "Error: Network issue - " ++ httpErrorToString httpError
-
+        PostError ->
+            "Error: Post error"
         OtherError msg ->
             "Error: " ++ msg
 

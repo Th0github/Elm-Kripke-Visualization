@@ -1,10 +1,6 @@
-\section{Model}\label{sec:Model}
-This section describes the Model
-post "/evaluate" $ do
-    formula <- jsonData :: ActionM Form
-    let trueWorlds = formula `trueIn` muddyStart
-    json trueWorlds
-\begin{code}
+ \section{Model}\label{sec:Model}
+ This section describes the Model
+ \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Model where
@@ -167,4 +163,4 @@ instance ToJSON Model where
         "valuations" .= map (\(w, ps) -> object ["world" .= w, "propositions" .= ps]) val'
       ]
 
--- % \end{code}
+\end{code}

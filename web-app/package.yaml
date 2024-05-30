@@ -15,14 +15,14 @@ dependencies:
   - scotty
   - wai-cors
   - text
-  
+
 
 library:
   source-dirs: lib
 
 executables:
   myprogram:
-    main: Main.hs
+    main: Main.lhs
     source-dirs: exec
     dependencies:
       - web-app

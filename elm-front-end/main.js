@@ -5474,7 +5474,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
+		{agentInput: '', agents: _List_Nil, currentRelationInputs: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relations: _List_Nil, showGraph: false, showPopup: false, showReadMe: false, successMsg: '', worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5484,9 +5484,13 @@ var $author$project$Main$subscriptions = function (model) {
 };
 var $author$project$Error$AgentDoesNotExist = {$: 'AgentDoesNotExist'};
 var $author$project$Error$AgentExists = {$: 'AgentExists'};
+var $author$project$Main$EvaluatedKripkeModel = function (a) {
+	return {$: 'EvaluatedKripkeModel', a: a};
+};
 var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
 var $author$project$Error$InvalidInput = {$: 'InvalidInput'};
 var $author$project$Error$InvalidRelationInput = {$: 'InvalidRelationInput'};
+var $author$project$Error$PostError = {$: 'PostError'};
 var $author$project$Main$PostedKripkeModel = function (a) {
 	return {$: 'PostedKripkeModel', a: a};
 };
@@ -6147,7 +6151,92 @@ var $elm$http$Http$expectString = function (toMsg) {
 		toMsg,
 		$elm$http$Http$resolve($elm$core$Result$Ok));
 };
-var $elm$http$Http$emptyBody = _Http_emptyBody;
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Model$newModelEncoder = function (model) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'worlds',
+				A2(
+					$elm$json$Json$Encode$list,
+					function (_v0) {
+						var w = _v0.a;
+						return $elm$json$Json$Encode$int(w);
+					},
+					model.worlds)),
+				_Utils_Tuple2(
+				'valuations',
+				A2(
+					$elm$json$Json$Encode$list,
+					function (_v1) {
+						var w = _v1.a;
+						var ps = _v1.b;
+						return $elm$json$Json$Encode$object(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'world',
+									$elm$json$Json$Encode$int(w)),
+									_Utils_Tuple2(
+									'propositions',
+									A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
+								]));
+					},
+					model.worlds)),
+				_Utils_Tuple2(
+				'relations',
+				A2(
+					$elm$json$Json$Encode$list,
+					function (_v2) {
+						var a = _v2.a;
+						var rs = _v2.b;
+						return $elm$json$Json$Encode$object(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'agentName',
+									$elm$json$Json$Encode$string(a)),
+									_Utils_Tuple2(
+									'worldRelations',
+									A2(
+										$elm$json$Json$Encode$list,
+										$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
+										rs))
+								]));
+					},
+					model.relations))
+			]));
+};
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -6316,6 +6405,21 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
+var $elm$http$Http$post = function (r) {
+	return $elm$http$Http$request(
+		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
+};
+var $author$project$Api$evaluateModel = F2(
+	function (model, onResponse) {
+		return $elm$http$Http$post(
+			{
+				body: $elm$http$Http$jsonBody(
+					$author$project$Model$newModelEncoder(model)),
+				expect: $elm$http$Http$expectString(onResponse),
+				url: 'http://127.0.0.1:3000/evaluate'
+			});
+	});
+var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
@@ -6369,6 +6473,7 @@ var $elm_community$list_extra$List$Extra$getAt = F2(
 		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, idx, xs));
 	});
+var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$List$member = F2(
 	function (x, xs) {
@@ -6394,103 +6499,13 @@ var $author$project$Main$parseInputToRelation = function (input) {
 	var allValid = A2($elm$core$List$all, isValidInteger, inputAsList);
 	return allValid ? $elm$core$Maybe$Just(parsedInputAsList) : $elm$core$Maybe$Nothing;
 };
-var $elm$http$Http$jsonBody = function (value) {
-	return A2(
-		_Http_pair,
-		'application/json',
-		A2($elm$json$Json$Encode$encode, 0, value));
-};
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Model$newModelEncoder = function (model) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'worlds',
-				A2(
-					$elm$json$Json$Encode$list,
-					function (_v0) {
-						var w = _v0.a;
-						return $elm$json$Json$Encode$int(w);
-					},
-					model.worlds)),
-				_Utils_Tuple2(
-				'valuations',
-				A2(
-					$elm$json$Json$Encode$list,
-					function (_v1) {
-						var w = _v1.a;
-						var ps = _v1.b;
-						return $elm$json$Json$Encode$object(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'world',
-									$elm$json$Json$Encode$int(w)),
-									_Utils_Tuple2(
-									'propositions',
-									A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
-								]));
-					},
-					model.worlds)),
-				_Utils_Tuple2(
-				'relations',
-				A2(
-					$elm$json$Json$Encode$list,
-					function (_v2) {
-						var a = _v2.a;
-						var rs = _v2.b;
-						return $elm$json$Json$Encode$object(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'agentName',
-									$elm$json$Json$Encode$string(a)),
-									_Utils_Tuple2(
-									'worldRelations',
-									A2(
-										$elm$json$Json$Encode$list,
-										$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
-										rs))
-								]));
-					},
-					model.relations))
-			]));
-};
 var $author$project$Api$postModel = F2(
 	function (model, onResponse) {
-		return $elm$http$Http$request(
+		return $elm$http$Http$post(
 			{
 				body: $elm$http$Http$jsonBody(
 					$author$project$Model$newModelEncoder(model)),
 				expect: $elm$http$Http$expectString(onResponse),
-				headers: _List_Nil,
-				method: 'POST',
-				timeout: $elm$core$Maybe$Nothing,
-				tracker: $elm$core$Maybe$Nothing,
 				url: 'http://127.0.0.1:3000/model'
 			});
 	});
@@ -7084,28 +7099,83 @@ var $author$project$Main$update = F2(
 						{showReadMe: !model.showReadMe}),
 					$elm$core$Platform$Cmd$none);
 			case 'PostKripkeModel':
-				return A2(
-					$elm$core$Debug$log,
-					'Post',
-					_Utils_Tuple2(
-						model,
-						A2($author$project$Api$postModel, model, $author$project$Main$PostedKripkeModel)));
+				return _Utils_Tuple2(
+					model,
+					A2($author$project$Api$postModel, model, $author$project$Main$PostedKripkeModel));
 			case 'PostedKripkeModel':
+				if (msg.a.$ === 'Ok') {
+					var response = msg.a.a;
+					var _v18 = A2($elm$core$Debug$log, 'Post success response', response);
+					var _v19 = $elm$core$Debug$log('Aaaaaaaaa');
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{successMsg: 'Successfully posted model'}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var httpError = msg.a.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								error: $elm$core$Maybe$Just($author$project$Error$PostError)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'EvaluateKripkeModel':
+				var _v20 = $elm$core$Debug$log('Validate');
+				return _Utils_Tuple2(
+					model,
+					A2($author$project$Api$evaluateModel, model, $author$project$Main$EvaluatedKripkeModel));
+			case 'EvaluatedKripkeModel':
+				if (msg.a.$ === 'Ok') {
+					var response = msg.a.a;
+					var _v21 = A2($elm$core$Debug$log, 'Validated', response);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{successMsg: 'Successfully validated model'}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var httpError = msg.a.a;
+					var _v22 = $elm$core$Debug$log('Validated Error');
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								error: $elm$core$Maybe$Just($author$project$Error$PostError)
+							}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'UrlRequested':
+				if (msg.a.$ === 'Internal') {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					if (msg.a.a === '') {
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					} else {
+						var url = msg.a.a;
+						return _Utils_Tuple2(
+							model,
+							$elm$browser$Browser$Navigation$load(url));
+					}
+				}
+			case 'UrlChanged':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'GotKripkeModel':
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 325, column: 13},
-						end: {line: 325, column: 23}
+						start: {line: 375, column: 13},
+						end: {line: 375, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
-				var _v18 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
-				var updatedModel = _v18.a;
-				var cmd1 = _v18.b;
-				var _v19 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
-				var finalModel = _v19.a;
-				var cmd2 = _v19.b;
+				var _v23 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v23.a;
+				var cmd1 = _v23.b;
+				var _v24 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v24.a;
+				var cmd2 = _v24.b;
 				return _Utils_Tuple2(
 					finalModel,
 					$elm$core$Platform$Cmd$batch(
@@ -7135,6 +7205,7 @@ var $author$project$Main$update = F2(
 	});
 var $author$project$Main$AddAgent = {$: 'AddAgent'};
 var $author$project$Main$AddWorld = {$: 'AddWorld'};
+var $author$project$Main$EvaluateKripkeModel = {$: 'EvaluateKripkeModel'};
 var $author$project$Main$FetchElmStuffReadMe = {$: 'FetchElmStuffReadMe'};
 var $author$project$Main$PostKripkeModel = {$: 'PostKripkeModel'};
 var $author$project$Main$ToggleAndFetch = {$: 'ToggleAndFetch'};
@@ -10076,6 +10147,7 @@ var $elm_explorations$markdown$Markdown$defaultOptions = {
 };
 var $elm_explorations$markdown$Markdown$toHtmlWith = _Markdown_toHtml;
 var $elm_explorations$markdown$Markdown$toHtml = $elm_explorations$markdown$Markdown$toHtmlWith($elm_explorations$markdown$Markdown$defaultOptions);
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$Error$httpErrorToString = function (httpError) {
 	switch (httpError.$) {
 		case 'BadUrl':
@@ -10114,6 +10186,8 @@ var $author$project$Error$errorToString = function (error) {
 		case 'NetworkError':
 			var httpError = error.a;
 			return 'Error: Network issue - ' + $author$project$Error$httpErrorToString(httpError);
+		case 'PostError':
+			return 'Error: Post error';
 		default:
 			var msg = error.a;
 			return 'Error: ' + msg;
@@ -10136,6 +10210,18 @@ var $author$project$Main$viewError = function (maybeError) {
 	} else {
 		return $elm$html$Html$text('');
 	}
+};
+var $author$project$Main$viewSuccess = function (msg) {
+	return (msg === '') ? $elm$html$Html$text('') : A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('success')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(msg)
+			]));
 };
 var $author$project$Main$AddProposition = function (a) {
 	return {$: 'AddProposition', a: a};
@@ -10279,6 +10365,7 @@ var $author$project$Main$view = function (model) {
 											]))
 									])) : $elm$html$Html$text('')
 							])),
+						$author$project$Main$viewSuccess(model.successMsg),
 						$author$project$Main$viewError(model.error),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						$elm$html$Html$text('Worlds'),
@@ -10362,27 +10449,50 @@ var $author$project$Main$view = function (model) {
 								}),
 							model.agents)),
 						A2(
-						$elm$html$Html$button,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
+								$elm$html$Html$Attributes$class('buttons')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Post Model')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$VisualizeKripkeModel),
-								$elm$html$Html$Events$onClick($author$project$Main$ToggleShowGraph)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Visualize Model')
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Attributes$class('button-red'),
+										$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Post Model')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Attributes$class('button-purple'),
+										$elm$html$Html$Events$onClick($author$project$Main$EvaluateKripkeModel)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Evaluate Model')
+									])),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('button'),
+										$elm$html$Html$Attributes$class('button-blue'),
+										$elm$html$Html$Events$onClick($author$project$Main$VisualizeKripkeModel),
+										$elm$html$Html$Events$onClick($author$project$Main$ToggleShowGraph)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Toggle json/graph')
+									]))
 							]))
 					])),
 				A2(

@@ -1,6 +1,6 @@
--- \section{The most basic library}\label{sec:Request}
--- This section describes request handling
--- \begin{code}
+\section{The most basic library}\label{sec:Request}
+This section describes request handling
+\begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 
@@ -60,7 +60,7 @@ handleRequest = scotty 3000 $ do
             { corsMethods = "DELETE" : "PUT" : simpleMethods, -- simpleMethods are GET,HEAD,POST
               corsRequestHeaders = "Content-Type" : simpleHeaders
             }
-            
--- \end{code}
+
+\end{code}
 
 -- That's it, for now.

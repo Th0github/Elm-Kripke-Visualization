@@ -40,6 +40,13 @@ body, input, button, div {
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.5); /* Glowing effect on focus */
 }
 
+.buttons {
+  display: flex;
+  gap: 10px; /* Adds spacing between buttons */
+  width: 100%; /* Utilizes full width of the container */
+  justify-content: space-around;
+}
+
 .button {
   background-color: #4CAF50;
   color: white;
@@ -48,6 +55,49 @@ body, input, button, div {
   cursor: pointer; /* Changes cursor to pointer to indicate it's clickable */
   border-radius: 4px; /* Rounded corners */
   transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+.success {
+  color: #4CAF50;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
+
+.button-red {
+  background-color: peru;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer; /* Changes cursor to pointer to indicate it's clickable */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+
+.button-blue {
+  background-color: teal;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer; /* Changes cursor to pointer to indicate it's clickable */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+
+.button-purple {
+  background-color: palevioletred;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer; /* Changes cursor to pointer to indicate it's clickable */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+.button-purple:hover {
+  background-color: #800080; /* Darker shade on hover */
 }
 
 .button-secondary {

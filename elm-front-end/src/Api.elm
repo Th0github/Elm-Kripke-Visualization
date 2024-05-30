@@ -22,12 +22,18 @@ fetchElmStuff onResponse =
 
 postModel : Model -> (Result Http.Error String -> msg) -> Cmd msg
 postModel model onResponse =
-    Http.request
-        { method = "POST"
-        , headers = []
+    Http.post
+        {
+        body = Http.jsonBody (newModelEncoder model)
         , url = "http://127.0.0.1:3000/model"
-        , body = Http.jsonBody (newModelEncoder model)
         , expect = Http.expectString onResponse
-        , timeout = Nothing
-        , tracker = Nothing
+        }
+
+evaluateModel : Model -> (Result Http.Error String -> msg) -> Cmd msg
+evaluateModel model onResponse =
+    Http.post
+        {
+        body = Http.jsonBody (newModelEncoder model)
+        , url = "http://127.0.0.1:3000/evaluate"
+        , expect = Http.expectString onResponse
         }

@@ -22,6 +22,7 @@ type alias Model =
     , showReadMe : Bool -- Show the Readme content
     , error : Maybe KMError -- Error message
     , showGraph : Bool -- Show the graph
+    , successMsg : String -- Success message
     }
 
 
