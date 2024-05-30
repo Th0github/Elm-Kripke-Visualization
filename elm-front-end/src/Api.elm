@@ -7,7 +7,7 @@ import Model exposing (Model, newModelEncoder)
 fetchReadMe : (Result Http.Error String -> msg) -> Cmd msg
 fetchReadMe onResponse =
     Http.get
-        { url = "https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/HELP.md"
+        { url = "https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/main/elm-front-end/src/Markdowns/HELP.md"
         , expect = Http.expectString onResponse
         }
 
@@ -15,7 +15,7 @@ fetchReadMe onResponse =
 fetchElmStuff : (Result Http.Error String -> msg) -> Cmd msg
 fetchElmStuff onResponse =
     Http.get
-        { url = "https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/ElmStuff.md"
+        { url = "https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/main/elm-front-end/src/Markdowns/ElmStuff.md"
         , expect = Http.expectString onResponse
         }
 
