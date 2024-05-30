@@ -13,6 +13,7 @@ import List.Extra
 import Markdown
 import Model exposing (Model)
 import Error exposing (KMError, errorToString)
+import KripkeModel exposing (KripkeModel)
 
 -- MODEL
 -- The model is initialized
@@ -385,9 +386,10 @@ view model =
 
               else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], highlightJson model.jsonOutput, getSvg ]
+                    [ text "Current JSON Output:", br [] [], highlightJson model.jsonOutput, getSvg (modelToKripke model) ]
             ]
         ]
+
 
 
 worldInputView : Model -> Int -> ( Int, List Int ) -> Html Msg
@@ -443,10 +445,24 @@ agentInputView index agentName currentValue =
 
 
 
-
-
 -- JSON ENCODING
 
+modelToKripke : Model -> KripkeModel
+modelToKripke model =
+    let
+        worlds =
+            List.map Tuple.first model.worlds
+
+        evaluations =
+            List.map (\(w, ps) -> { world = w, propositions = ps }) model.worlds
+
+        relations =
+            List.map (\(a, rs) -> { agentName = a, worldRelations = rs }) model.relations
+    in
+    { worlds = worlds
+    , relations = relations
+    , evaluations = evaluations
+    }
 
 toJson : Model -> String
 toJson model =

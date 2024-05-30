@@ -67,12 +67,12 @@ fromKripkeModelToGraph { worlds, relations, evaluations } =
         (List.concatMap (\{ agentName, worldRelations } -> List.concatMap (combineWorlds agentName) worldRelations) relations)
 
 
-getSvg : Svg msg
-getSvg =
+getSvg : KripkeModel ->  Svg msg
+getSvg kripkeModel =
     let
         graph =
             fromKripkeModelToGraph
-                muddy
+                kripkeModel
 
         links =
             List.map (\lnk -> ( lnk.from, lnk.to )) <| Graph.edges graph
