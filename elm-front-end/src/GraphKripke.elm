@@ -96,9 +96,9 @@ getSvg =
                 links
     in
     svg
-        [ viewBox -10 -10 200 150
-        , Attrs.width <| Percent 50
-        , Attrs.height <| Percent 100
+        [ viewBox -10 -10 150 150
+        , Attrs.width <| Percent 100
+        , Attrs.height <| Percent 50
         ]
         [ edges
             |> List.map

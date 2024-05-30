@@ -1,8 +1,6 @@
 module MainTest exposing (..)
 
-import Expect exposing (Expectation, equal, fail)
-import Json.Decode exposing (decodeString)
-import Json.Encode
+import Expect
 import Main exposing (..)
 import Model exposing (Model)
 import Test exposing (..)
@@ -25,6 +23,7 @@ initialModel =
     , readMeContent = ""
     , showPopup = False
     , showReadMe = False
+    , error = Nothing
     }
 
 

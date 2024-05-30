@@ -1,11 +1,11 @@
 module Main exposing (..)
 
-import Api exposing (fetchedReadMe, postModel)
+import Api exposing (fetchElmStuff, fetchReadMe, postModel)
 import Browser
 import GraphKripke exposing (getSvg)
-import Html exposing (Html, br, button, div, h1, input, text)
+import Html exposing (Html, br, button, div, h1, input, pre, span, text)
 import Html.Attributes exposing (class, placeholder, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onMouseEnter)
 import Html.Lazy exposing (lazy)
 import Http
 import Json.Encode exposing (encode, int, list, object, string)
@@ -16,6 +16,7 @@ import Model exposing (Model)
 
 
 -- MODEL
+-- The model is initialized
 
 
 init : () -> ( Model, Cmd Msg )
@@ -31,6 +32,7 @@ init _ =
       , readMeContent = ""
       , showPopup = False
       , showReadMe = False
+      , error = Nothing
       }
     , Cmd.none
     )
@@ -38,6 +40,7 @@ init _ =
 
 
 -- UPDATE
+-- Here, are the actions that can be performed on the model, which updates the UI
 
 
 type Msg
@@ -52,9 +55,17 @@ type Msg
     | ReceiveReadMe (Result Http.Error String)
     | ToggleReadMe
     | FetchReadMe
+    | FetchElmStuffReadMe
     | PostKripkeModel
+    | RemoveWorld Int
     | PostedKripkeModel (Result Http.Error String)
     | GotKripkeModel (Result Http.Error String)
+    | ToggleAndFetch
+    | ToggleChoiceBox
+
+
+
+-- The update function takes a message and a model and returns a new model and a command.
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,19 +74,50 @@ update msg model =
         UpdateWorldInput input ->
             ( { model | worldInput = input }, Cmd.none )
 
+        -- Adds the current world input to the worlds list
         AddWorld ->
             let
-                world =
-                    String.toInt model.worldInput |> Maybe.withDefault 0
+                maybeWorld =
+                    String.toInt model.worldInput
 
-                updatedWorlds =
-                    model.worlds ++ [ ( world, [] ) ]
+                ( updatedWorlds, errorMsg ) =
+                    case maybeWorld of
+                        Just world ->
+                            let
+                                worldExists =
+                                    List.any (\( w, _ ) -> w == world) model.worlds
+                            in
+                            if worldExists then
+                                ( model.worlds, Just "Error: World already exists" )
+
+                            else
+                                ( model.worlds ++ [ ( world, [] ) ], Nothing )
+
+                        Nothing ->
+                            ( model.worlds, Just "Error: Invalid input" )
             in
             ( { model
                 | worlds = updatedWorlds
                 , worldInput = ""
                 , propositionInputs = model.propositionInputs ++ [ "" ]
                 , jsonOutput = toJson { model | worlds = updatedWorlds }
+                , error = errorMsg
+              }
+            , Cmd.none
+            )
+
+        RemoveWorld index ->
+            let
+                updatedWorlds =
+                    List.Extra.removeAt index model.worlds
+            in
+            ( { model
+                | worlds = updatedWorlds
+                , jsonOutput =
+                    { model
+                        | worlds = updatedWorlds
+                    }
+                        |> toJson
               }
             , Cmd.none
             )
@@ -106,19 +148,45 @@ update msg model =
         -- Adds the current proposition input to the propositions list for the given world index from the propositionInputs list
         AddProposition index ->
             let
-                proposition =
-                    String.toInt (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") |> Maybe.withDefault 0
+                maybeProposition =
+                    List.Extra.getAt index model.propositionInputs
+                        |> Maybe.andThen String.toInt
 
-                updatedWorlds =
-                    List.indexedMap
-                        (\i ( w, ps ) ->
-                            if i == index then
-                                ( w, ps ++ [ proposition ] )
+                ( updatedWorlds, errorMsg ) =
+                    case maybeProposition of
+                        Just proposition ->
+                            let
+                                propositionExists =
+                                    case List.Extra.getAt index model.worlds of
+                                        Just ( _, ps ) ->
+                                            List.any (\p -> p == proposition) ps
+
+                                        Nothing ->
+                                            False
+
+                                updates =
+                                    if propositionExists then
+                                        model.worlds
+
+                                    else
+                                        List.indexedMap
+                                            (\i ( w, ps ) ->
+                                                if i == index && not propositionExists then
+                                                    ( w, ps ++ [ proposition ] )
+
+                                                else
+                                                    ( w, ps )
+                                            )
+                                            model.worlds
+                            in
+                            if propositionExists then
+                                ( updates, Just "Error: Proposition already exists" )
 
                             else
-                                ( w, ps )
-                        )
-                        model.worlds
+                                ( updates, Nothing )
+
+                        Nothing ->
+                            ( model.worlds, Just "Error: Invalid input" )
             in
             ( { model
                 | worlds = updatedWorlds
@@ -133,6 +201,7 @@ update msg model =
                         )
                         model.propositionInputs
                 , jsonOutput = toJson { model | worlds = updatedWorlds }
+                , error = errorMsg
               }
             , Cmd.none
             )
@@ -140,23 +209,11 @@ update msg model =
         --Updates the current relation input for the given agent index
         UpdateRelationInput index input ->
             let
-                _ =
-                    Debug.log "Input index" index
-
-                _ =
-                    Debug.log "Input value" input
-
                 inputAsList =
                     String.words input |> List.map (\n -> String.toInt n |> Maybe.withDefault 0)
 
-                _ =
-                    Debug.log "Input as list" inputAsList
-
                 updatedRelationInputs =
                     List.Extra.updateAt index (\_ -> inputAsList) model.relationInputs
-
-                _ =
-                    Debug.log "Updated relation inputs" updatedRelationInputs
             in
             ( { model | relationInputs = updatedRelationInputs }, Cmd.none )
 
@@ -171,12 +228,6 @@ update msg model =
 
                 updateRelations ( name, existingRelations ) =
                     ( name, existingRelations ++ [ currentRelations ] )
-
-                _ =
-                    Debug.log "Current relations" currentRelations
-
-                _ =
-                    Debug.log "Updated relations" (updateRelations (List.Extra.getAt agentIndex model.relations |> Maybe.withDefault ( "", [] )))
 
                 -- Update the relations for the found agent index
                 updatedRelations =
@@ -200,7 +251,10 @@ update msg model =
             )
 
         FetchReadMe ->
-            ( model, fetchedReadMe ReceiveReadMe )
+            ( model, fetchReadMe ReceiveReadMe )
+
+        FetchElmStuffReadMe ->
+            ( model, fetchElmStuff ReceiveReadMe )
 
         ReceiveReadMe (Ok content) ->
             ( { model | readMeContent = content }, Cmd.none )
@@ -225,28 +279,57 @@ update msg model =
         GotKripkeModel _ ->
             Debug.todo "TODO"
 
+        ToggleAndFetch ->
+            let
+                ( updatedModel, cmd1 ) =
+                    update ToggleReadMe model
+
+                ( finalModel, cmd2 ) =
+                    update FetchReadMe updatedModel
+            in
+            ( finalModel, Cmd.batch [ cmd1, cmd2 ] )
+
+        ToggleChoiceBox ->
+            ( { model | showPopup = not model.showPopup }, Cmd.none )
+
 
 
 -- VIEW
---<link rel="stylesheet" type="text/css" href="styles.css">
---Need to add this to the index.html file to link the css file
+-- The view functions defines the layout of the UI and how the model is displayed
 
 
 view : Model -> Html Msg
 view model =
     div [ class "container-flex" ]
         [ div [ class "left-column" ]
-            [ div [ class "container" ] [ text "Kripke Model Creator" ]
+            [ div [ class "head-container" ]
+                [ text "Kripke Model Creator"
+                , button [ class "button", onMouseEnter ToggleChoiceBox, onClick ToggleAndFetch ] [ text "Toggle Help" ]
+                , if model.showPopup then
+                    div []
+                        [ button [ class "button", onClick FetchReadMe ] [ text "Help Page" ]
+                        , button [ class "button", onClick FetchElmStuffReadMe ] [ text "Elm Stuff" ]
+                        ]
+
+                  else
+                    text ""
+                ]
+            , viewError model.error
+            , br [] []
+            , text "Worlds"
+            , br [] []
+            , br [] []
             , input [ class "input", placeholder "Enter world (integer)", onInput UpdateWorldInput, value model.worldInput ] []
             , button [ class "button", onClick AddWorld ] [ text "Add World" ]
             , br [] []
             , div [ class "container" ] (List.indexedMap (worldInputView model) model.worlds)
+            , text "Agents"
+            , br [] []
+            , br [] []
             , input [ class "input", placeholder "Enter agent name", onInput UpdateAgentInput, value model.agentInput ] []
             , button [ class "button", onClick AddAgent ] [ text "Add Agent" ]
             , br [] []
             , div [ class "container" ] (List.indexedMap agentInputView model.agents)
-            , button [ class "button", onClick ToggleReadMe ] [ text "Toggle README/JSON" ]
-            , button [ class "button", onClick FetchReadMe ] [ text "Fetch README" ]
             , button [ class "button", onClick PostKripkeModel ] [ text "Post Model" ]
             ]
 
@@ -254,13 +337,13 @@ view model =
         , div [ class "right-column" ]
             [ if model.showReadMe then
                 div []
-                    [ h1 [] [ text "REPORT" ]
+                    [ h1 [] [ text "Documentation" ]
                     , div [] [ lazy (Markdown.toHtml []) model.readMeContent ]
                     ]
 
               else
                 div [ class "container" ]
-                    [ text "Current JSON Output:", br [] [], getSvg ]
+                    [ text "Current JSON Output:", br [] [], highlightJson model.jsonOutput, getSvg ]
             ]
         ]
 
@@ -268,10 +351,9 @@ view model =
 worldInputView : Model -> Int -> ( Int, List Int ) -> Html Msg
 worldInputView model index ( world, propositions ) =
     div [ class "container" ]
-        [ text <| "World " ++ String.fromInt world ++ ": "
+        [ div [ class "world-header" ] [ text <| "World " ++ String.fromInt world ++ ":   ", button [ class "button-secondary", onClick (RemoveWorld index) ] [ text "X" ] ]
         , input [ class "input", placeholder "Add proposition (integer)", onInput (UpdatePropositionInput index), value (List.Extra.getAt index model.propositionInputs |> Maybe.withDefault "") ] []
         , button [ class "button", onClick (AddProposition index) ] [ text "Add Proposition" ]
-        , text <| " Propositions: " ++ String.join ", " (List.map String.fromInt propositions)
         , br [] []
         ]
 
@@ -282,7 +364,7 @@ agentInputView index agent =
         [ text <| "Agent " ++ agent ++ ": "
         , input
             [ class "input"
-            , placeholder "Add relation (list of worlds)"
+            , placeholder "Add relation (list of worlds, space separated integers)"
             , onInput (UpdateRelationInput index)
 
             -- , value (List.Extra.getAt index model.re)
@@ -309,8 +391,75 @@ toJson model =
         |> encode 4
 
 
+viewError : Maybe String -> Html msg
+viewError maybeError =
+    case maybeError of
+        Just errorMsg ->
+            div [ class "error" ] [ text errorMsg ]
 
--- Fetch Readme content
+        Nothing ->
+            text ""
+
+
+highlightJson : String -> Html msg
+highlightJson jsonString =
+    let
+        highlight : Char -> Html msg
+        highlight c =
+            let
+                charStr =
+                    String.fromChar c
+            in
+            case c of
+                '{' ->
+                    span [ class "brace" ] [ text charStr ]
+
+                '}' ->
+                    span [ class "brace" ] [ text charStr ]
+
+                '[' ->
+                    span [ class "brace" ] [ text charStr ]
+
+                ']' ->
+                    span [ class "brace" ] [ text charStr ]
+
+                '"' ->
+                    if String.contains ": " (String.dropLeft 1 jsonString) then
+                        span [ class "key" ] [ text charStr ]
+
+                    else
+                        span [ class "string" ] [ text charStr ]
+
+                ',' ->
+                    text charStr
+
+                ':' ->
+                    text charStr
+
+                ' ' ->
+                    text charStr
+
+                '-' ->
+                    text charStr
+
+                '.' ->
+                    text charStr
+
+                _ ->
+                    if Char.isDigit c then
+                        span [ class "number" ] [ text charStr ]
+
+                    else if String.contains "truefalse" charStr then
+                        span [ class "boolean" ] [ text charStr ]
+
+                    else
+                        text charStr
+    in
+    pre [ class "syntax-highlighted-json" ]
+        (List.map highlight (String.toList jsonString))
+
+
+
 -- SUBSCRIPTIONS
 
 

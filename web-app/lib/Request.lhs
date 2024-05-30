@@ -5,7 +5,6 @@
 
 module Request
   ( handleRequest,
-    muddyStart,
   )
 where
 
@@ -30,24 +29,6 @@ import Web.Scotty
 
 -- import Network.HTTP.Types
 
-muddyStart :: Model
-muddyStart =
-  Mo
-    [0, 1, 2, 3, 4, 5, 6, 7]
-    [ ("1", [[0, 4], [2, 6], [3, 7], [1, 5]]),
-      ("2", [[0, 2], [4, 6], [5, 7], [1, 3]]),
-      ("3", [[0, 1], [4, 5], [6, 7], [2, 3]])
-    ]
-    [ (0, []),
-      (1, [3]),
-      (2, [2]),
-      (3, [2, 3]),
-      (4, [1]),
-      (5, [1, 3]),
-      (6, [1, 2]),
-      (7, [1, 2, 3])
-    ]
-
 handleRequest :: IO ()
 handleRequest = scotty 3000 $ do
   middleware corsMiddleware
@@ -68,7 +49,7 @@ handleRequest = scotty 3000 $ do
     model <- jsonData :: ActionM Model -- Decode body of the POST request as an Model object
     liftIO $ saveModel model
     json model
-  notFound $ do
+  notFound $ do -- handler for when there is no matched route
     text "there is no such route."
   where
     corsMiddleware = cors (const $ Just resourcePolicy)
@@ -78,9 +59,7 @@ handleRequest = scotty 3000 $ do
             { corsMethods = "DELETE" : "PUT" : simpleMethods, -- simpleMethods are GET,HEAD,POST
               corsRequestHeaders = "Content-Type" : simpleHeaders
             }
-
--- handler for when there is no matched route
--- (this should be the last handler because it matches all routes)
+            
 -- \end{code}
 
 -- That's it, for now.

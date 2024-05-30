@@ -3,7 +3,7 @@
 --  \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Model ((!), (?), isTrue, (|=), kw, (-->), trueIn, Prop, Agent, Form, World, Relations, Valuation, Model (..)) where
+module Model where
 
 import Control.Applicative ()
 import Data.Aeson
@@ -65,8 +65,29 @@ dis f g = Neg (Con (Neg f) (Neg g))
 kw :: Agent -> Form -> Form
 kw i f = dis (K i f) (K i (Neg f))
 
-trueIn :: Model -> Form -> [World]
-trueIn (Mo u v r) f = filter (\w -> isTrue (Mo u v r, w) f) u
+trueIn :: Form -> Model -> [World]
+trueIn f m = [ w | w <- worlds m, (m,w) |= f ]
+
+falseIn :: Form -> Model -> [World]
+falseIn = trueIn . Neg
+
+muddyStart :: Model
+muddyStart =
+  Mo
+    [0, 1, 2, 3, 4, 5, 6, 7]
+    [ ("1", [[0, 4], [2, 6], [3, 7], [1, 5]]),
+      ("2", [[0, 2], [4, 6], [5, 7], [1, 3]]),
+      ("3", [[0, 1], [4, 5], [6, 7], [2, 3]])
+    ]
+    [ (0, []),
+      (1, [3]),
+      (2, [2]),
+      (3, [2, 3]),
+      (4, [1]),
+      (5, [1, 3]),
+      (6, [1, 2]),
+      (7, [1, 2, 3])
+    ]
 
 instance FromJSON Model where
   parseJSON =

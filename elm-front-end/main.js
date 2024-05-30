@@ -5474,7 +5474,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{agentInput: '', agents: _List_Nil, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
+		{agentInput: '', agents: _List_Nil, error: $elm$core$Maybe$Nothing, jsonOutput: '', propositionInputs: _List_Nil, readMeContent: '', relationInputs: _List_Nil, relations: _List_Nil, showPopup: false, showReadMe: false, worldInput: '', worlds: _List_Nil},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5482,12 +5482,44 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
 var $author$project$Main$PostedKripkeModel = function (a) {
 	return {$: 'PostedKripkeModel', a: a};
 };
 var $author$project$Main$ReceiveReadMe = function (a) {
 	return {$: 'ReceiveReadMe', a: a};
 };
+var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -6267,11 +6299,18 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Api$fetchedReadMe = function (onResponse) {
+var $author$project$Api$fetchElmStuff = function (onResponse) {
 	return $elm$http$Http$get(
 		{
 			expect: $elm$http$Http$expectString(onResponse),
-			url: 'https://raw.githubusercontent.com/elm/browser/master/README.md'
+			url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/ElmStuff.md'
+		});
+};
+var $author$project$Api$fetchReadMe = function (onResponse) {
+	return $elm$http$Http$get(
+		{
+			expect: $elm$http$Http$expectString(onResponse),
+			url: 'https://raw.githubusercontent.com/Th0github/Elm-Kripke-Visualization/style/hoover-button/elm-front-end/src/Markdowns/HELP.md'
 		});
 };
 var $elm$core$List$drop = F2(
@@ -6411,66 +6450,6 @@ var $author$project$Api$postModel = F2(
 				url: 'http://127.0.0.1:3000/model'
 			});
 	});
-var $author$project$Main$toJson = function (model) {
-	return A2(
-		$elm$json$Json$Encode$encode,
-		4,
-		$elm$json$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'worlds',
-					A2(
-						$elm$json$Json$Encode$list,
-						function (_v0) {
-							var w = _v0.a;
-							return $elm$json$Json$Encode$int(w);
-						},
-						model.worlds)),
-					_Utils_Tuple2(
-					'valuations',
-					A2(
-						$elm$json$Json$Encode$list,
-						function (_v1) {
-							var w = _v1.a;
-							var ps = _v1.b;
-							return $elm$json$Json$Encode$object(
-								_List_fromArray(
-									[
-										_Utils_Tuple2(
-										'world',
-										$elm$json$Json$Encode$int(w)),
-										_Utils_Tuple2(
-										'propositions',
-										A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
-									]));
-						},
-						model.worlds)),
-					_Utils_Tuple2(
-					'relations',
-					A2(
-						$elm$json$Json$Encode$list,
-						function (_v2) {
-							var a = _v2.a;
-							var rs = _v2.b;
-							return $elm$json$Json$Encode$object(
-								_List_fromArray(
-									[
-										_Utils_Tuple2(
-										'agentName',
-										$elm$json$Json$Encode$string(a)),
-										_Utils_Tuple2(
-										'worldRelations',
-										A2(
-											$elm$json$Json$Encode$list,
-											$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
-											rs))
-									]));
-						},
-						model.relations))
-				])));
-};
-var $elm$core$Debug$todo = _Debug_todo;
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -6597,6 +6576,82 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
+var $elm_community$list_extra$List$Extra$removeAt = F2(
+	function (index, l) {
+		if (index < 0) {
+			return l;
+		} else {
+			var _v0 = A2($elm$core$List$drop, index, l);
+			if (!_v0.b) {
+				return l;
+			} else {
+				var rest = _v0.b;
+				return _Utils_ap(
+					A2($elm$core$List$take, index, l),
+					rest);
+			}
+		}
+	});
+var $author$project$Main$toJson = function (model) {
+	return A2(
+		$elm$json$Json$Encode$encode,
+		4,
+		$elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'worlds',
+					A2(
+						$elm$json$Json$Encode$list,
+						function (_v0) {
+							var w = _v0.a;
+							return $elm$json$Json$Encode$int(w);
+						},
+						model.worlds)),
+					_Utils_Tuple2(
+					'valuations',
+					A2(
+						$elm$json$Json$Encode$list,
+						function (_v1) {
+							var w = _v1.a;
+							var ps = _v1.b;
+							return $elm$json$Json$Encode$object(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'world',
+										$elm$json$Json$Encode$int(w)),
+										_Utils_Tuple2(
+										'propositions',
+										A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, ps))
+									]));
+						},
+						model.worlds)),
+					_Utils_Tuple2(
+					'relations',
+					A2(
+						$elm$json$Json$Encode$list,
+						function (_v2) {
+							var a = _v2.a;
+							var rs = _v2.b;
+							return $elm$json$Json$Encode$object(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'agentName',
+										$elm$json$Json$Encode$string(a)),
+										_Utils_Tuple2(
+										'worldRelations',
+										A2(
+											$elm$json$Json$Encode$list,
+											$elm$json$Json$Encode$list($elm$json$Json$Encode$int),
+											rs))
+									]));
+						},
+						model.relations))
+				])));
+};
+var $elm$core$Debug$todo = _Debug_todo;
 var $elm_community$list_extra$List$Extra$updateAt = F3(
 	function (index, fn, list) {
 		if (index < 0) {
@@ -6638,20 +6693,40 @@ var $author$project$Main$update = F2(
 						{worldInput: input}),
 					$elm$core$Platform$Cmd$none);
 			case 'AddWorld':
-				var world = A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					$elm$core$String$toInt(model.worldInput));
-				var updatedWorlds = _Utils_ap(
-					model.worlds,
-					_List_fromArray(
-						[
-							_Utils_Tuple2(world, _List_Nil)
-						]));
+				var maybeWorld = $elm$core$String$toInt(model.worldInput);
+				var _v1 = function () {
+					if (maybeWorld.$ === 'Just') {
+						var world = maybeWorld.a;
+						var worldExists = A2(
+							$elm$core$List$any,
+							function (_v3) {
+								var w = _v3.a;
+								return _Utils_eq(w, world);
+							},
+							model.worlds);
+						return worldExists ? _Utils_Tuple2(
+							model.worlds,
+							$elm$core$Maybe$Just('Error: World already exists')) : _Utils_Tuple2(
+							_Utils_ap(
+								model.worlds,
+								_List_fromArray(
+									[
+										_Utils_Tuple2(world, _List_Nil)
+									])),
+							$elm$core$Maybe$Nothing);
+					} else {
+						return _Utils_Tuple2(
+							model.worlds,
+							$elm$core$Maybe$Just('Error: Invalid input'));
+					}
+				}();
+				var updatedWorlds = _v1.a;
+				var errorMsg = _v1.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
+							error: errorMsg,
 							jsonOutput: $author$project$Main$toJson(
 								_Utils_update(
 									model,
@@ -6661,6 +6736,20 @@ var $author$project$Main$update = F2(
 								_List_fromArray(
 									[''])),
 							worldInput: '',
+							worlds: updatedWorlds
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'RemoveWorld':
+				var index = msg.a;
+				var updatedWorlds = A2($elm_community$list_extra$List$Extra$removeAt, index, model.worlds);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							jsonOutput: $author$project$Main$toJson(
+								_Utils_update(
+									model,
+									{worlds: updatedWorlds})),
 							worlds: updatedWorlds
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6708,7 +6797,7 @@ var $author$project$Main$update = F2(
 				var updatedPropositions = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v1) {
+					function (_v4) {
 						return input;
 					},
 					model.propositionInputs);
@@ -6719,32 +6808,58 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'AddProposition':
 				var index = msg.a;
-				var proposition = A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					$elm$core$String$toInt(
-						A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2($elm_community$list_extra$List$Extra$getAt, index, model.propositionInputs))));
-				var updatedWorlds = A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (i, _v2) {
-							var w = _v2.a;
-							var ps = _v2.b;
-							return _Utils_eq(i, index) ? _Utils_Tuple2(
-								w,
-								_Utils_ap(
-									ps,
-									_List_fromArray(
-										[proposition]))) : _Utils_Tuple2(w, ps);
-						}),
-					model.worlds);
+				var maybeProposition = A2(
+					$elm$core$Maybe$andThen,
+					$elm$core$String$toInt,
+					A2($elm_community$list_extra$List$Extra$getAt, index, model.propositionInputs));
+				var _v5 = function () {
+					if (maybeProposition.$ === 'Just') {
+						var proposition = maybeProposition.a;
+						var propositionExists = function () {
+							var _v8 = A2($elm_community$list_extra$List$Extra$getAt, index, model.worlds);
+							if (_v8.$ === 'Just') {
+								var _v9 = _v8.a;
+								var ps = _v9.b;
+								return A2(
+									$elm$core$List$any,
+									function (p) {
+										return _Utils_eq(p, proposition);
+									},
+									ps);
+							} else {
+								return false;
+							}
+						}();
+						var updates = propositionExists ? model.worlds : A2(
+							$elm$core$List$indexedMap,
+							F2(
+								function (i, _v7) {
+									var w = _v7.a;
+									var ps = _v7.b;
+									return (_Utils_eq(i, index) && (!propositionExists)) ? _Utils_Tuple2(
+										w,
+										_Utils_ap(
+											ps,
+											_List_fromArray(
+												[proposition]))) : _Utils_Tuple2(w, ps);
+								}),
+							model.worlds);
+						return propositionExists ? _Utils_Tuple2(
+							updates,
+							$elm$core$Maybe$Just('Error: Proposition already exists')) : _Utils_Tuple2(updates, $elm$core$Maybe$Nothing);
+					} else {
+						return _Utils_Tuple2(
+							model.worlds,
+							$elm$core$Maybe$Just('Error: Invalid input'));
+					}
+				}();
+				var updatedWorlds = _v5.a;
+				var errorMsg = _v5.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
+							error: errorMsg,
 							jsonOutput: $author$project$Main$toJson(
 								_Utils_update(
 									model,
@@ -6774,14 +6889,10 @@ var $author$project$Main$update = F2(
 				var updatedRelationInputs = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (_v7) {
+					function (_v10) {
 						return inputAsList;
 					},
 					model.relationInputs);
-				var _v3 = A2($elm$core$Debug$log, 'Input index', index);
-				var _v4 = A2($elm$core$Debug$log, 'Input value', input);
-				var _v5 = A2($elm$core$Debug$log, 'Input as list', inputAsList);
-				var _v6 = A2($elm$core$Debug$log, 'Updated relation inputs', updatedRelationInputs);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6791,9 +6902,9 @@ var $author$project$Main$update = F2(
 				var agentIndex = msg.a;
 				var maybeCurrentRelations = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relationInputs);
 				var currentRelations = A2($elm$core$Maybe$withDefault, _List_Nil, maybeCurrentRelations);
-				var updateRelations = function (_v10) {
-					var name = _v10.a;
-					var existingRelations = _v10.b;
+				var updateRelations = function (_v11) {
+					var name = _v11.a;
+					var existingRelations = _v11.b;
 					return _Utils_Tuple2(
 						name,
 						_Utils_ap(
@@ -6802,15 +6913,6 @@ var $author$project$Main$update = F2(
 								[currentRelations])));
 				};
 				var updatedRelations = A3($elm_community$list_extra$List$Extra$updateAt, agentIndex, updateRelations, model.relations);
-				var _v8 = A2($elm$core$Debug$log, 'Current relations', currentRelations);
-				var _v9 = A2(
-					$elm$core$Debug$log,
-					'Updated relations',
-					updateRelations(
-						A2(
-							$elm$core$Maybe$withDefault,
-							_Utils_Tuple2('', _List_Nil),
-							A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relations))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6832,7 +6934,11 @@ var $author$project$Main$update = F2(
 			case 'FetchReadMe':
 				return _Utils_Tuple2(
 					model,
-					$author$project$Api$fetchedReadMe($author$project$Main$ReceiveReadMe));
+					$author$project$Api$fetchReadMe($author$project$Main$ReceiveReadMe));
+			case 'FetchElmStuffReadMe':
+				return _Utils_Tuple2(
+					model,
+					$author$project$Api$fetchElmStuff($author$project$Main$ReceiveReadMe));
 			case 'ReceiveReadMe':
 				if (msg.a.$ === 'Ok') {
 					var content = msg.a.a;
@@ -6863,20 +6969,39 @@ var $author$project$Main$update = F2(
 						A2($author$project$Api$postModel, model, $author$project$Main$PostedKripkeModel)));
 			case 'PostedKripkeModel':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
+			case 'GotKripkeModel':
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 226, column: 13},
-						end: {line: 226, column: 23}
+						start: {line: 280, column: 13},
+						end: {line: 280, column: 23}
 					})('TODO');
+			case 'ToggleAndFetch':
+				var _v12 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v12.a;
+				var cmd1 = _v12.b;
+				var _v13 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v13.a;
+				var cmd2 = _v13.b;
+				return _Utils_Tuple2(
+					finalModel,
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[cmd1, cmd2])));
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showPopup: !model.showPopup}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$AddAgent = {$: 'AddAgent'};
 var $author$project$Main$AddWorld = {$: 'AddWorld'};
-var $author$project$Main$FetchReadMe = {$: 'FetchReadMe'};
+var $author$project$Main$FetchElmStuffReadMe = {$: 'FetchElmStuffReadMe'};
 var $author$project$Main$PostKripkeModel = {$: 'PostKripkeModel'};
-var $author$project$Main$ToggleReadMe = {$: 'ToggleReadMe'};
+var $author$project$Main$ToggleAndFetch = {$: 'ToggleAndFetch'};
+var $author$project$Main$ToggleChoiceBox = {$: 'ToggleChoiceBox'};
 var $author$project$Main$UpdateAgentInput = function (a) {
 	return {$: 'UpdateAgentInput', a: a};
 };
@@ -6971,7 +7096,7 @@ var $author$project$Main$agentInputView = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('input'),
-							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds)'),
+							$elm$html$Html$Attributes$placeholder('Add relation (list of worlds, space separated integers)'),
 							$elm$html$Html$Events$onInput(
 							$author$project$Main$UpdateRelationInput(index))
 						]),
@@ -9606,11 +9731,11 @@ var $author$project$GraphKripke$getSvg = function () {
 		$elm_community$typed_svg$TypedSvg$svg,
 		_List_fromArray(
 			[
-				A4($elm_community$typed_svg$TypedSvg$Attributes$viewBox, -10, -10, 200, 150),
+				A4($elm_community$typed_svg$TypedSvg$Attributes$viewBox, -10, -10, 150, 150),
 				$elm_community$typed_svg$TypedSvg$Attributes$width(
-				$elm_community$typed_svg$TypedSvg$Types$Percent(50)),
+				$elm_community$typed_svg$TypedSvg$Types$Percent(100)),
 				$elm_community$typed_svg$TypedSvg$Attributes$height(
-				$elm_community$typed_svg$TypedSvg$Types$Percent(100))
+				$elm_community$typed_svg$TypedSvg$Types$Percent(50))
 			]),
 		_List_fromArray(
 			[
@@ -9709,8 +9834,138 @@ var $author$project$GraphKripke$getSvg = function () {
 			]));
 }();
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Main$highlightJson = function (jsonString) {
+	var highlight = function (c) {
+		var charStr = $elm$core$String$fromChar(c);
+		switch (c.valueOf()) {
+			case '{':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '}':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '[':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case ']':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('brace')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case '\"':
+				return A2(
+					$elm$core$String$contains,
+					': ',
+					A2($elm$core$String$dropLeft, 1, jsonString)) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('key')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('string')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						]));
+			case ',':
+				return $elm$html$Html$text(charStr);
+			case ':':
+				return $elm$html$Html$text(charStr);
+			case ' ':
+				return $elm$html$Html$text(charStr);
+			case '-':
+				return $elm$html$Html$text(charStr);
+			case '.':
+				return $elm$html$Html$text(charStr);
+			default:
+				return $elm$core$Char$isDigit(c) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('number')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : (A2($elm$core$String$contains, 'truefalse', charStr) ? A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('boolean')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(charStr)
+						])) : $elm$html$Html$text(charStr));
+		}
+	};
+	return A2(
+		$elm$html$Html$pre,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('syntax-highlighted-json')
+			]),
+		A2(
+			$elm$core$List$map,
+			highlight,
+			$elm$core$String$toList(jsonString)));
+};
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
+var $elm$html$Html$Events$onMouseEnter = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseenter',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm_explorations$markdown$Markdown$defaultOptions = {
 	defaultHighlighting: $elm$core$Maybe$Nothing,
 	githubFlavored: $elm$core$Maybe$Just(
@@ -9721,8 +9976,28 @@ var $elm_explorations$markdown$Markdown$defaultOptions = {
 var $elm_explorations$markdown$Markdown$toHtmlWith = _Markdown_toHtml;
 var $elm_explorations$markdown$Markdown$toHtml = $elm_explorations$markdown$Markdown$toHtmlWith($elm_explorations$markdown$Markdown$defaultOptions);
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Main$viewError = function (maybeError) {
+	if (maybeError.$ === 'Just') {
+		var errorMsg = maybeError.a;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('error')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(errorMsg)
+				]));
+	} else {
+		return $elm$html$Html$text('');
+	}
+};
 var $author$project$Main$AddProposition = function (a) {
 	return {$: 'AddProposition', a: a};
+};
+var $author$project$Main$RemoveWorld = function (a) {
+	return {$: 'RemoveWorld', a: a};
 };
 var $author$project$Main$UpdatePropositionInput = F2(
 	function (a, b) {
@@ -9740,8 +10015,29 @@ var $author$project$Main$worldInputView = F3(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(
-					'World ' + ($elm$core$String$fromInt(world) + ': ')),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('world-header')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'World ' + ($elm$core$String$fromInt(world) + ':   ')),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button-secondary'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Main$RemoveWorld(index))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('X')
+								]))
+						])),
 					A2(
 					$elm$html$Html$input,
 					_List_fromArray(
@@ -9769,11 +10065,6 @@ var $author$project$Main$worldInputView = F3(
 						[
 							$elm$html$Html$text('Add Proposition')
 						])),
-					$elm$html$Html$text(
-					' Propositions: ' + A2(
-						$elm$core$String$join,
-						', ',
-						A2($elm$core$List$map, $elm$core$String$fromInt, propositions))),
 					A2($elm$html$Html$br, _List_Nil, _List_Nil)
 				]));
 	});
@@ -9798,12 +10089,57 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('container')
+								$elm$html$Html$Attributes$class('head-container')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Kripke Model Creator')
+								$elm$html$Html$text('Kripke Model Creator'),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('button'),
+										$elm$html$Html$Events$onMouseEnter($author$project$Main$ToggleChoiceBox),
+										$elm$html$Html$Events$onClick($author$project$Main$ToggleAndFetch)
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Toggle Help')
+									])),
+								model.showPopup ? A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Help Page')
+											])),
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('button'),
+												$elm$html$Html$Events$onClick($author$project$Main$FetchElmStuffReadMe)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Elm Stuff')
+											]))
+									])) : $elm$html$Html$text('')
 							])),
+						$author$project$Main$viewError(model.error),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						$elm$html$Html$text('Worlds'),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
@@ -9836,6 +10172,9 @@ var $author$project$Main$view = function (model) {
 							$elm$core$List$indexedMap,
 							$author$project$Main$worldInputView(model),
 							model.worlds)),
+						$elm$html$Html$text('Agents'),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$input,
 						_List_fromArray(
@@ -9870,28 +10209,6 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$ToggleReadMe)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Toggle README/JSON')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
-								$elm$html$Html$Events$onClick($author$project$Main$FetchReadMe)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Fetch README')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('button'),
 								$elm$html$Html$Events$onClick($author$project$Main$PostKripkeModel)
 							]),
 						_List_fromArray(
@@ -9917,7 +10234,7 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('REPORT')
+										$elm$html$Html$text('Documentation')
 									])),
 								A2(
 								$elm$html$Html$div,
@@ -9939,6 +10256,7 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$text('Current JSON Output:'),
 								A2($elm$html$Html$br, _List_Nil, _List_Nil),
+								$author$project$Main$highlightJson(model.jsonOutput),
 								$author$project$GraphKripke$getSvg
 							]))
 					]))
