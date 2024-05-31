@@ -3,7 +3,7 @@ module MainTest exposing (..)
 import Expect
 import Main exposing (..)
 import Model exposing (Model)
-import Test exposing (..)
+import Test exposing (Test,describe,test)
 
 
 
@@ -13,18 +13,21 @@ import Test exposing (..)
 initialModel : Model
 initialModel =
     { worlds = []
-    , agents = []
-    , relations = []
-    , jsonOutput = ""
-    , worldInput = ""
-    , agentInput = ""
-    , propositionInputs = []
-    , relationInputs = []
-    , readMeContent = ""
-    , showPopup = False
-    , showReadMe = False
-    , error = Nothing
-    }
+      , agents = []
+      , relations = []
+      , jsonOutput = ""
+      , worldInput = ""
+      , agentInput = ""
+      , propositionInputs = []
+      , readMeContent = ""
+      , valuationPropositionInput = ""
+      , showPopup = False
+      , showReadMe = False
+      , showGraph = False
+      , error = Nothing
+      , currentRelationInputs = []
+      , successMsg = ""
+      }
 
 
 
@@ -37,7 +40,7 @@ testUpdateWorldInput =
         ( updatedModel, _ ) =
             update (UpdateWorldInput "1") initialModel
     in
-    Test.describe "UpdateWorldInput"
+    describe "UpdateWorldInput"
         [ Test.test "Updates world input correctly" <|
             \() -> Expect.equal updatedModel.worldInput "1"
         ]
@@ -52,7 +55,7 @@ testAddWorld =
         ( updatedModel, _ ) =
             update AddWorld modelWithWorldInput
     in
-    Test.describe "AddWorld"
+    describe "AddWorld"
         [ Test.test "Adds a world correctly" <|
             \() -> Expect.equal updatedModel.worlds [ ( 1, [] ) ]
         ]
@@ -64,8 +67,8 @@ testUpdateAgentInput =
         ( updatedModel, _ ) =
             update (UpdateAgentInput "Alice") initialModel
     in
-    Test.describe "UpdateAgentInput"
-        [ Test.test "Updates agent input correctly" <|
+        describe "UpdateAgentInput"
+        [ test "Updates agent input correctly" <|
             \() -> Expect.equal updatedModel.agentInput "Alice"
         ]
 
@@ -79,15 +82,15 @@ testAddAgent =
         ( updatedModel, _ ) =
             update AddAgent modelWithAgentInput
     in
-    Test.describe "AddAgent"
-        [ Test.test "Adds an agent correctly" <|
+    describe "AddAgent"
+        [ test "Adds an agent correctly" <|
             \() -> Expect.equal updatedModel.agents [ "Alice" ]
         ]
 
 
 suite : Test
 suite =
-    Test.describe "Main"
+    describe "Main"
         [ testUpdateWorldInput
         , testAddWorld
         , testUpdateAgentInput
