@@ -5,19 +5,27 @@
 ### Elm
 
 First install the Elm compiler (see https://guide.elm-lang.org/install/)
-To compile the new version for Elm front-end:
+If you are in the main directory of this project, go to the following subdirectory:
 
 ```bash
-elm make src/Main.elm --main.js
+cd elm-front-end
 ```
 
-With runnning
+In this directory, you can compile the new version of the front-end project through:
+
+```bash
+elm make src/Main.elm --output main.js
+```
+
+After compiling the main.js, you can start the webpage through the following commands.
+First, start the development server of Elm through the following command.
 
 ```bash
 elm reactor
 ```
 
-You can open the index.html and see the web page
+It start a development server on your machine on port 8000.
+If you open the following address through your prefered web browser `localhost:8000`, you can open the `index.html` file and see the web page
 
 ### Haskell
 

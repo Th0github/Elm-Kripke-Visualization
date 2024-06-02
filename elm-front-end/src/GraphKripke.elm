@@ -3,16 +3,15 @@ module GraphKripke exposing (getSvg)
 -- -- import Pages.KripkeModel exposing (..)
 
 import Color
-import Debug exposing (todo)
 import Dict
 import Force
 import Graph exposing (Edge, Graph, Node, fromNodesAndEdges)
 import KripkeModel exposing (KripkeModel)
-import Model exposing (Model, World)
-import TypedSvg exposing (circle, defs, g, line, svg, text_, title)
+import Model exposing (World)
+import TypedSvg exposing (circle, g, line, svg, text_, title)
 import TypedSvg.Attributes as Attrs exposing (class, fill, fontSize, stroke, viewBox)
 import TypedSvg.Attributes.InPx exposing (cx, cy, dx, dy, r, strokeWidth, x1, x2, y1, y2)
-import TypedSvg.Core exposing (Attribute, Svg, text)
+import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Cursor(..), Length(..), Paint(..))
 
 
@@ -41,15 +40,8 @@ muddy =
     }
 
 
-
--- [0, 1, 2, 3, 4, 5, 6, 7]
---
---     [
---     ]
-
-
 fromKripkeModelToGraph : KripkeModel -> Graph String String
-fromKripkeModelToGraph { worlds, relations, evaluations } =
+fromKripkeModelToGraph { relations, evaluations } =
     let
         combineWorlds : String -> List World -> List (Edge String)
         combineWorlds label xs =
@@ -67,7 +59,7 @@ fromKripkeModelToGraph { worlds, relations, evaluations } =
         (List.concatMap (\{ agentName, worldRelations } -> List.concatMap (combineWorlds agentName) worldRelations) relations)
 
 
-getSvg : KripkeModel ->  Svg msg
+getSvg : KripkeModel -> Svg msg
 getSvg kripkeModel =
     let
         graph =
@@ -149,14 +141,3 @@ getSvg kripkeModel =
                 )
             |> g [ class [ "nodes" ] ]
         ]
-
-
-
--- -- Generate GraphViz DOT format from a graph
--- generateDot : Graph a b -> String
--- generateDot =
---     todo "Implement GraphViz DOT generation from a graph"
--- -- Generate the SVG representation of a graph
--- generateSVG : KripkeModel -> List (Svg msg)
--- generateSVG model =
---     todo "Implement SVG generation"
