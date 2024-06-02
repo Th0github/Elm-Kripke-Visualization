@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Api exposing (fetchElmStuff, fetchReadMe, postModel, evaluateModel)
 import Browser exposing (UrlRequest )
-import Browser.Navigation as Nav
 import Url exposing (Url)
 import GraphKripke exposing (getSvg)
 import Html exposing (Html, br, button, div, h1, input, pre, span, text)
@@ -71,8 +70,8 @@ type Msg
     | ToggleShowGraph
     | EvaluateKripkeModel
     | EvaluatedKripkeModel (Result Http.Error String)
-    | UrlRequested Browser.UrlRequest
-    | UrlChanged Url.Url
+    | UrlRequested UrlRequest
+    | UrlChanged Url
     | UpdateValuationPropositionInput String
 
 
@@ -243,7 +242,7 @@ update msg model =
         UpdateRelationInput index input ->
             let
                 updatedCurrentRelationInputs =
-                    List.Extra.updateAt index (\a -> input) model.currentRelationInputs
+                    List.Extra.updateAt index (\_ -> input) model.currentRelationInputs
             in
             ( { model | currentRelationInputs = updatedCurrentRelationInputs }, Cmd.none )
 
@@ -276,7 +275,7 @@ update msg model =
                                         List.Extra.updateAt agentIndex (\_ -> (agentName, existingRelations ++ [parsedInput])) model.relations
 
                                 updatedCurrentRelationInputs =
-                                    List.Extra.updateAt agentIndex (\a -> "") model.currentRelationInputs
+                                    List.Extra.updateAt agentIndex (\_ -> "") model.currentRelationInputs
 
                                 updatedModel =
                                     if relationExists then
@@ -329,7 +328,7 @@ update msg model =
             in
             ( { model | successMsg = "Successfully posted model"}, Cmd.none )
 
-        PostedKripkeModel (Err httpError) ->
+        PostedKripkeModel (Err _) ->
             ( { model | error = Just Error.PostError }, Cmd.none )
 
         EvaluateKripkeModel ->
@@ -345,7 +344,7 @@ update msg model =
             in
             ( { model | successMsg = "Successfully validated model,\n Worlds where this is true: " ++ response}, Cmd.none )
 
-        EvaluatedKripkeModel (Err httpError) ->
+        EvaluatedKripkeModel (Err _) ->
             let
                 _ =
                     Debug.log "Validated Error"
@@ -368,7 +367,7 @@ update msg model =
         UrlRequested (Browser.External "") ->
             ( model, Cmd.none )
 
-        UrlRequested (Browser.External url) ->
+        UrlRequested (Browser.External _) ->
             ( model, Cmd.none )
 
         UrlChanged _ ->
@@ -632,7 +631,7 @@ highlightJson jsonString =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+subscriptions _ = Sub.none
 
 
 -- PROGRAM

@@ -5479,7 +5479,7 @@ var $author$project$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$subscriptions = function (model) {
+var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
 var $author$project$Error$AgentDoesNotExist = {$: 'AgentDoesNotExist'};
@@ -6157,7 +6157,6 @@ var $elm$http$Http$jsonBody = function (value) {
 		'application/json',
 		A2($elm$json$Json$Encode$encode, 0, value));
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $author$project$Model$encodePropositionInput = function (input) {
 	var _v0 = $elm$core$String$toInt(input);
@@ -6437,8 +6436,6 @@ var $elm$http$Http$post = function (r) {
 var $author$project$Api$evaluateModel = F2(
 	function (model, onResponse) {
 		var jsonValue = $author$project$Model$newModelPropositionEncoder(model);
-		var jsonBody = A2($elm$json$Json$Encode$encode, 0, jsonValue);
-		var _v0 = A2($elm$core$Debug$log, 'JSON Body', jsonBody);
 		return $elm$http$Http$post(
 			{
 				body: $elm$http$Http$jsonBody(jsonValue),
@@ -6500,6 +6497,7 @@ var $elm_community$list_extra$List$Extra$getAt = F2(
 		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, idx, xs));
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -7049,7 +7047,7 @@ var $author$project$Main$update = F2(
 				var updatedCurrentRelationInputs = A3(
 					$elm_community$list_extra$List$Extra$updateAt,
 					index,
-					function (a) {
+					function (_v10) {
 						return input;
 					},
 					model.currentRelationInputs);
@@ -7062,23 +7060,23 @@ var $author$project$Main$update = F2(
 				var agentIndex = msg.a;
 				var maybeCurrentInput = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.currentRelationInputs);
 				var maybeAgentRelations = A2($elm_community$list_extra$List$Extra$getAt, agentIndex, model.relations);
-				var _v10 = _Utils_Tuple2(maybeCurrentInput, maybeAgentRelations);
-				if (_v10.a.$ === 'Just') {
-					if (_v10.b.$ === 'Just') {
-						var currentInput = _v10.a.a;
-						var _v11 = _v10.b.a;
-						var agentName = _v11.a;
-						var existingRelations = _v11.b;
-						var _v12 = $author$project$Main$parseInputToRelation(currentInput);
-						if (_v12.$ === 'Just') {
-							var parsedInput = _v12.a;
+				var _v11 = _Utils_Tuple2(maybeCurrentInput, maybeAgentRelations);
+				if (_v11.a.$ === 'Just') {
+					if (_v11.b.$ === 'Just') {
+						var currentInput = _v11.a.a;
+						var _v12 = _v11.b.a;
+						var agentName = _v12.a;
+						var existingRelations = _v12.b;
+						var _v13 = $author$project$Main$parseInputToRelation(currentInput);
+						if (_v13.$ === 'Just') {
+							var parsedInput = _v13.a;
 							var worldsExist = A2(
 								$elm$core$List$all,
 								function (w) {
 									return A2(
 										$elm$core$List$any,
-										function (_v15) {
-											var world = _v15.a;
+										function (_v17) {
+											var world = _v17.a;
 											return _Utils_eq(world, w);
 										},
 										model.worlds);
@@ -7087,7 +7085,7 @@ var $author$project$Main$update = F2(
 							var updatedCurrentRelationInputs = A3(
 								$elm_community$list_extra$List$Extra$updateAt,
 								agentIndex,
-								function (a) {
+								function (_v16) {
 									return '';
 								},
 								model.currentRelationInputs);
@@ -7095,7 +7093,7 @@ var $author$project$Main$update = F2(
 							var updatedRelations = relationExists ? model.relations : A3(
 								$elm_community$list_extra$List$Extra$updateAt,
 								agentIndex,
-								function (_v14) {
+								function (_v15) {
 									return _Utils_Tuple2(
 										agentName,
 										_Utils_ap(
@@ -7124,7 +7122,7 @@ var $author$project$Main$update = F2(
 											{relations: updatedRelations})),
 									relations: updatedRelations
 								}));
-							var _v13 = A2($elm$core$Debug$log, 'Worlds Exist', worldsExist);
+							var _v14 = A2($elm$core$Debug$log, 'Worlds Exist', worldsExist);
 							return _Utils_Tuple2(updatedModel, $elm$core$Platform$Cmd$none);
 						} else {
 							return _Utils_Tuple2(
@@ -7136,7 +7134,7 @@ var $author$project$Main$update = F2(
 								$elm$core$Platform$Cmd$none);
 						}
 					} else {
-						var _v17 = _v10.b;
+						var _v19 = _v11.b;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
@@ -7146,7 +7144,7 @@ var $author$project$Main$update = F2(
 							$elm$core$Platform$Cmd$none);
 					}
 				} else {
-					var _v16 = _v10.a;
+					var _v18 = _v11.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7191,15 +7189,14 @@ var $author$project$Main$update = F2(
 			case 'PostedKripkeModel':
 				if (msg.a.$ === 'Ok') {
 					var response = msg.a.a;
-					var _v18 = A2($elm$core$Debug$log, 'Post success response', response);
-					var _v19 = $elm$core$Debug$log('Aaaaaaaaa');
+					var _v20 = A2($elm$core$Debug$log, 'Post success response', response);
+					var _v21 = $elm$core$Debug$log('Aaaaaaaaa');
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{successMsg: 'Successfully posted model'}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var httpError = msg.a.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7221,15 +7218,14 @@ var $author$project$Main$update = F2(
 			case 'EvaluatedKripkeModel':
 				if (msg.a.$ === 'Ok') {
 					var response = msg.a.a;
-					var _v20 = A2($elm$core$Debug$log, 'Validated', response);
+					var _v22 = A2($elm$core$Debug$log, 'Validated', response);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{successMsg: 'Successfully validated model,\n Worlds where this is true ' + response}),
+							{successMsg: 'Successfully validated model,\n Worlds where this is true: ' + response}),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					var httpError = msg.a.a;
-					var _v21 = $elm$core$Debug$log('Validated Error');
+					var _v23 = $elm$core$Debug$log('Validated Error');
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7240,7 +7236,7 @@ var $author$project$Main$update = F2(
 				}
 			case 'UpdateValuationPropositionInput':
 				var input = msg.a;
-				var _v22 = $elm$core$Debug$log('Valuation Proposition Input');
+				var _v24 = $elm$core$Debug$log('Valuation Proposition Input');
 				return (!_Utils_eq(
 					$elm$core$String$toInt(input),
 					$elm$core$Maybe$Nothing)) ? _Utils_Tuple2(
@@ -7265,7 +7261,6 @@ var $author$project$Main$update = F2(
 					if (msg.a.a === '') {
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 					} else {
-						var url = msg.a.a;
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 					}
 				}
@@ -7275,16 +7270,16 @@ var $author$project$Main$update = F2(
 				return _Debug_todo(
 					'Main',
 					{
-						start: {line: 384, column: 13},
-						end: {line: 384, column: 23}
+						start: {line: 383, column: 13},
+						end: {line: 383, column: 23}
 					})('TODO');
 			case 'ToggleAndFetch':
-				var _v23 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
-				var updatedModel = _v23.a;
-				var cmd1 = _v23.b;
-				var _v24 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
-				var finalModel = _v24.a;
-				var cmd2 = _v24.b;
+				var _v25 = A2($author$project$Main$update, $author$project$Main$ToggleReadMe, model);
+				var updatedModel = _v25.a;
+				var cmd1 = _v25.b;
+				var _v26 = A2($author$project$Main$update, $author$project$Main$FetchReadMe, updatedModel);
+				var finalModel = _v26.a;
+				var cmd2 = _v26.b;
 				return _Utils_Tuple2(
 					finalModel,
 					$elm$core$Platform$Cmd$batch(
@@ -9597,7 +9592,6 @@ var $elm_community$graph$Graph$fromNodesAndEdges = F2(
 			A3($elm$core$List$foldl, addEdgeIfValid, nodeRep, edges_));
 	});
 var $author$project$GraphKripke$fromKripkeModelToGraph = function (_v0) {
-	var worlds = _v0.worlds;
 	var relations = _v0.relations;
 	var evaluations = _v0.evaluations;
 	var combineWorlds = F2(
