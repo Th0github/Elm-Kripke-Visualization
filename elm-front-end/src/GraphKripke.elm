@@ -15,31 +15,6 @@ import TypedSvg.Core exposing (Svg, text)
 import TypedSvg.Types exposing (AlignmentBaseline(..), AnchorAlignment(..), Cursor(..), Length(..), Paint(..))
 
 
-
--- convert a Kripke model to a Graph
-
-
-muddy : KripkeModel
-muddy =
-    { worlds = [ 0, 1, 2, 3, 4, 5, 6, 7 ]
-    , relations =
-        [ { agentName = "1", worldRelations = [ [ 0, 4 ], [ 2, 6 ], [ 3, 7 ], [ 1, 5 ] ] }
-        , { agentName = "2", worldRelations = [ [ 0, 2 ], [ 4, 6 ], [ 5, 7 ], [ 1, 3 ] ] }
-        , { agentName = "3", worldRelations = [ [ 0, 1 ], [ 4, 5 ], [ 6, 7 ], [ 2, 3 ] ] }
-        ]
-    , evaluations =
-        [ { world = 0, propositions = [] }
-        , { world = 1, propositions = [ 3 ] }
-        , { world = 2, propositions = [ 2 ] }
-        , { world = 3, propositions = [ 2, 3 ] }
-        , { world = 4, propositions = [ 1 ] }
-        , { world = 5, propositions = [ 1, 3 ] }
-        , { world = 6, propositions = [ 1, 2 ] }
-        , { world = 7, propositions = [ 1, 2, 3 ] }
-        ]
-    }
-
-
 fromKripkeModelToGraph : KripkeModel -> Graph String String
 fromKripkeModelToGraph { relations, evaluations } =
     let

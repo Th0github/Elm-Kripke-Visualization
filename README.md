@@ -30,14 +30,16 @@ If you open the following address through your prefered web browser `localhost:8
 ### Haskell
 
 The Haskell back-end is called web-app
+First you install stack (see https://www.haskell.org/).
 
-After installing stack (see https://www.haskell.org/), you can build the application with
+When you are in the main directory of the application, you go to `web-app` directory.
+In this directory, you can build the application with
 
 ```bash
 stack build
 ```
 
-After that you run the application with
+After that you run the application within the same directory:
 
 ```bash
 stack run web-app-exe

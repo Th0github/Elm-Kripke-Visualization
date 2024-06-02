@@ -1,6 +1,3 @@
---  \section{Model}\label{sec:Model}
---  This section describes the Model
---  \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Model where
@@ -65,5 +62,3 @@ instance ToJSON Model where
         "relations" .= map (\(a, ws) -> object ["agentName" .= a, "worldRelations" .= ws]) rel',
         "valuations" .= map (\(w, ps) -> object ["world" .= w, "propositions" .= ps]) val'
       ]
-
--- \end{code}

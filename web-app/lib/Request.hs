@@ -1,6 +1,3 @@
--- \section{The most basic library}\label{sec:Request}
--- This section describes request handling
--- \begin{code}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Request where
@@ -13,16 +10,12 @@ import Model
 import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsRequestHeaders), cors, simpleCorsResourcePolicy, simpleHeaders, simpleMethods)
 import Web.Scotty
   ( ActionM,
-    delete,
     get,
-    html,
     json,
     jsonData,
     middleware,
     notFound,
     post,
-    put,
-    request,
     scotty,
     text,
   )
@@ -32,14 +25,7 @@ handleRequest = scotty 3000 $ do
   middleware corsMiddleware
   get "/" $ do
     -- handle GET request on "/" URL
-    text "This was a GET request!" -- send 'text/plain' response
-  delete "/" $ do
-    html "This was a DELETE request!" -- send 'text/html' response
-  post "/" $ do
-    text "This was a POST request!"
-  put "/" $ do
-    text "This was a PUT request!"
-  -- get model (json)
+    text "Application works!" -- send 'text/plain' response
   get "/model" $ do
     model <- liftIO getModel
     json model -- Call Model constructor and encode the result as JSON
@@ -61,7 +47,3 @@ handleRequest = scotty 3000 $ do
             { corsMethods = "DELETE" : "PUT" : simpleMethods, -- simpleMethods are GET,HEAD,POST
               corsRequestHeaders = "Content-Type" : simpleHeaders
             }
-
--- \end{code}
-
--- That's it, for now.

@@ -1,7 +1,6 @@
 module Api exposing (..)
 
 import Http
-import Json.Encode exposing (encode)
 import Model exposing (Model, newModelEncoder, newModelPropositionEncoder)
 
 
